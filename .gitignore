@@ -14,3 +14,4 @@ logs/
 build/
 bot_state.json
 dashboard.json
+.env
