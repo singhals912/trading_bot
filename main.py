@@ -17,7 +17,7 @@ import os
 import pandas as pd
 import numpy as np
 
-# Import original modules (modified)
+# Import original modules
 from algo_trading_bot_v5 import AlgoTradingBot, TradingMetrics
 
 class AutonomousTradingBot(AlgoTradingBot):
