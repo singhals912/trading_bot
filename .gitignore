@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+# Local configuration files
+config.py
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Logs
+logs/
+# Coverage reports
+.coverage
+# Build directories
+build/
+bot_state.json
+dashboard.json

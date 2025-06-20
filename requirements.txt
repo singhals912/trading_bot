@@ -1,0 +1,52 @@
+# requirements.txt
+# Core Trading
+alpaca-py==0.13.3
+pandas==2.1.4
+numpy==1.24.3
+ta==0.10.2  # Technical indicators
+
+# Data Sources
+yfinance==0.2.33  # Backup free data
+alpha-vantage==2.3.1  # Optional
+
+# Infrastructure
+asyncio==3.4.3
+aiohttp==3.9.1
+psutil==5.9.6  # System monitoring
+schedule==1.2.0
+
+# Alerts & Monitoring
+twilio==8.10.0  # SMS alerts
+python-telegram-bot==20.7  # Optional
+discord.py==2.3.2  # Optional
+email-validator==2.1.0
+
+# Web Dashboard
+flask==3.0.0
+flask-socketio==5.3.5
+plotly==5.18.0
+dash==2.14.1  # Optional advanced dashboard
+
+# ML Enhancement (Optional)
+scikit-learn==1.3.2
+tensorflow==2.15.0  # If using deep learning
+joblib==1.3.2
+
+# Database
+redis==5.0.1  # Optional for caching
+
+# Cloud (Optional)
+google-cloud-compute==1.14.1
+google-cloud-storage==2.10.0
+boto3==1.29.7  # If using AWS
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0  # Code formatting
+pylint==3.0.2
+
+# Utilities
+python-dotenv==1.0.0
+pytz==2023.3
+requests==2.31.0
