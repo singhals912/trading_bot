@@ -247,12 +247,12 @@ class AlgoTradingBot:
 
     def calculate_position_size(self, symbol: str, current_price: float, volatility: float = None) -> int:
         """
-        Advanced position sizing with Kelly Criterion and dynamic risk adjustment
+        Enhanced position sizing with Kelly Criterion, dynamic risk adjustment, and event-driven factors
         """
         try:
             account_info = self.get_account_info()
             
-            # Get historical performance for Kelly Criterion
+            # STEP 1: Calculate Kelly Criterion base risk
             symbol_trades = [t for t in self.metrics.trades if t.symbol == symbol]
             
             if len(symbol_trades) >= 10:  # Use Kelly if sufficient history
@@ -273,7 +273,7 @@ class AlgoTradingBot:
             else:
                 kelly_fraction = self.config['RISK_PCT']
             
-            # Portfolio heat adjustment
+            # STEP 2: Apply portfolio and market adjustments
             portfolio_heat = self._calculate_portfolio_heat()
             heat_adjustment = max(0.5, 1 - portfolio_heat)  # Reduce size if portfolio is "hot"
             
@@ -287,25 +287,53 @@ class AlgoTradingBot:
             market_regime = self._detect_market_regime()
             regime_adjustment = 0.5 if market_regime == 'high_stress' else 1.0
             
-            # Calculate final position size
-            adjusted_risk = kelly_fraction * heat_adjustment * vol_adjustment * regime_adjustment
+            # STEP 3: Apply event-driven risk adjustments (NEW)
+            event_adjustment = 1.0
+            if hasattr(self, '_event_risk_adjustments') and symbol in self._event_risk_adjustments:
+                event_adjustment = self._event_risk_adjustments[symbol]
+                
+            # STEP 4: Calculate final position size
+            # Combine all adjustments
+            total_adjustment = kelly_fraction * heat_adjustment * vol_adjustment * regime_adjustment * event_adjustment
+            
             max_investment = min(
-                account_info['equity'] * adjusted_risk,
+                account_info['equity'] * total_adjustment,
                 account_info['buying_power'] * 0.9
             )
             
             shares = int(max_investment / current_price)
             
-            self.logger.debug(f"Position sizing for {symbol}: Kelly={kelly_fraction:.3f}, "
-                            f"Heat={heat_adjustment:.3f}, Vol={vol_adjustment:.3f}, "
-                            f"Regime={regime_adjustment:.3f}, Shares={shares}")
+            # STEP 5: Logging for transparency
+            self.logger.debug(f"Position sizing for {symbol}: "
+                            f"Kelly={kelly_fraction:.3f}, "
+                            f"Heat={heat_adjustment:.3f}, "
+                            f"Vol={vol_adjustment:.3f}, "
+                            f"Regime={regime_adjustment:.3f}, "
+                            f"Event={event_adjustment:.3f}, "
+                            f"Final={total_adjustment:.3f}, "
+                            f"Shares={shares}")
             
-            return max(1, shares)
+            if event_adjustment < 1.0:
+                self.logger.info(f"Position size for {symbol} reduced by events: {event_adjustment:.2f}")
+                
+            return max(1, shares)  # Always return at least 1 share
             
         except Exception as e:
-            self.logger.error(f"Advanced position sizing failed for {symbol}: {str(e)}")
-            return 0
-
+            self.logger.error(f"Enhanced position sizing failed for {symbol}: {str(e)}")
+            
+            # FALLBACK: Simple position sizing without recursion
+            try:
+                account_info = self.get_account_info()
+                simple_investment = account_info['equity'] * self.config['RISK_PCT']
+                fallback_shares = int(simple_investment / current_price)
+                
+                self.logger.info(f"Using fallback position sizing for {symbol}: {fallback_shares} shares")
+                return max(1, fallback_shares)
+                
+            except Exception as fallback_error:
+                self.logger.error(f"Even fallback position sizing failed for {symbol}: {str(fallback_error)}")
+                return 1  # Minimum viable position
+            
     def _calculate_portfolio_heat(self) -> float:
         """Calculate portfolio heat (correlation risk)"""
         if len(self.positions) < 2:
@@ -846,6 +874,43 @@ class AlgoTradingBot:
         except Exception as e:
             self.logger.error(f"Failed to generate performance report: {str(e)}")
             return None
+        
+    async def _handle_pre_market_trading(self):
+        """Enhanced pre-market trading with event awareness"""
+        self.logger.debug("Pre-market session - enhanced event-aware trading")
+        
+        # Only trade most liquid symbols in pre-market
+        liquid_symbols = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'TSLA']
+        
+        for symbol in liquid_symbols:
+            if symbol in self.positions:
+                continue
+                
+            try:
+                # Get pre-market risk adjustment
+                pre_market_adjustment = 0.5  # Default 50% reduction
+                
+                if self.event_manager:
+                    pre_market_adjustment = self.event_manager.get_pre_market_risk_adjustment(symbol)
+                    
+                if pre_market_adjustment == 0.0:
+                    self.logger.debug(f"Pre-market trading blocked for {symbol}")
+                    continue
+                    
+                # Generate signal with event awareness
+                signal = await self._generate_enhanced_signal(symbol)
+                if signal:
+                    # Apply additional pre-market risk reduction
+                    original_risk = self.config['RISK_PCT']
+                    self.config['RISK_PCT'] = original_risk * pre_market_adjustment
+                    
+                    await self._execute_enhanced_trade(symbol, signal)
+                    
+                    # Restore original risk
+                    self.config['RISK_PCT'] = original_risk
+                    
+            except Exception as e:
+                self.logger.error(f"Pre-market trading error for {symbol}: {str(e)}")
 
     def run(self):
         """Enhanced main trading loop with better error handling"""

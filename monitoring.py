@@ -27,6 +27,88 @@ class AlertRule:
     cooldown_minutes: int = 60
     last_triggered: Optional[datetime] = None
 
+class EventManager:
+    """Manage market events and external data sources"""
+    
+    def __init__(self, config: Dict):
+        self.config = config
+        self.events = []
+        
+    async def check_market_events(self, symbols: List[str]) -> List[str]:
+        """Check for market events and return event types"""
+        event_types = []
+        
+        # Check earnings calendar
+        if await self._check_earnings_proximity(symbols):
+            event_types.append("earnings_proximity")
+            
+        # Check FOMC meetings
+        if await self._check_fomc_proximity():
+            event_types.append("fomc_proximity")
+            
+        # Check for negative news
+        if await self._check_negative_news(symbols):
+            event_types.append("negative_news")
+            
+        # Check market stress
+        if await self._check_market_stress():
+            event_types.append("market_stress")
+            
+        return event_types
+    
+    async def _check_earnings_proximity(self, symbols: List[str]) -> bool:
+        """Check if any tracked symbols have earnings in next 3 days"""
+        # In practice, this would call an earnings calendar API
+        # For now, return False as placeholder
+        return False
+    
+    async def _check_fomc_proximity(self) -> bool:
+        """Check if FOMC meeting is within 2 days"""
+        # FOMC dates for 2025
+        fomc_dates = [
+            datetime(2025, 1, 29),
+            datetime(2025, 3, 19),
+            datetime(2025, 5, 7),
+            datetime(2025, 6, 18),
+            datetime(2025, 7, 30),
+            datetime(2025, 9, 17),
+            datetime(2025, 11, 5),
+            datetime(2025, 12, 17)
+        ]
+        
+        now = datetime.now()
+        for fomc_date in fomc_dates:
+            days_until = (fomc_date - now).days
+            if 0 <= days_until <= 2:
+                return True
+        return False
+    
+    async def _check_negative_news(self, symbols: List[str]) -> bool:
+        """Check for negative news about tracked symbols"""
+        # Placeholder - would integrate with news API
+        return False
+    
+    async def _check_market_stress(self) -> bool:
+        """Check market stress indicators"""
+        # Placeholder - would check VIX, yield curve, etc.
+        return False
+    
+    def get_events_summary(self) -> Dict:
+        """Get summary of recent events"""
+        return {
+            'total_events': len(self.events),
+            'latest_events': self.events[-5:] if self.events else []
+        }
+    
+    def get_market_regime_assessment(self) -> Dict:
+        """Assess current market regime"""
+        # Simplified assessment
+        return {
+            'regime': 'normal',
+            'risk_score': 20,
+            'recommendation': 'Normal trading operations can continue'
+        }
+
 class SmartAlertSystem:
     """Intelligent alerting that reduces noise and provides actionable insights"""
     
@@ -42,10 +124,11 @@ class SmartAlertSystem:
         }
         self.batched_alerts = []
         self.digest_queue = []
+        self.event_manager = EventManager(config)
         
     def _initialize_rules(self) -> List[AlertRule]:
-        """Initialize smart alert rules"""
-        return [
+        """Initialize smart alert rules with event-driven alerts"""
+        base_rules = [
             # Critical alerts (always notify)
             AlertRule(
                 name="daily_loss_limit",
@@ -93,8 +176,49 @@ class SmartAlertSystem:
             )
         ]
         
-    async def evaluate_alerts(self, metrics: Dict):
-        """Evaluate all alert rules"""
+        # ADD these new event-driven rules:
+        event_rules = [
+            AlertRule(
+                name="earnings_week_detected",
+                condition="event",
+                params={"event_type": "earnings_proximity"},
+                severity="warning",
+                cooldown_minutes=60
+            ),
+            AlertRule(
+                name="fomc_meeting_detected",
+                condition="event", 
+                params={"event_type": "fomc_proximity"},
+                severity="warning",
+                cooldown_minutes=720  # 12 hours
+            ),
+            AlertRule(
+                name="negative_news_detected",
+                condition="event",
+                params={"event_type": "negative_news"},
+                severity="warning",
+                cooldown_minutes=30
+            ),
+            AlertRule(
+                name="market_stress_elevated",
+                condition="event",
+                params={"event_type": "market_stress"},
+                severity="critical",
+                cooldown_minutes=60
+            )
+        ]
+        
+        return base_rules + event_rules
+        
+    async def evaluate_alerts(self, metrics: Dict, bot_instance=None):
+        """Evaluate all alert rules with event checking"""
+        
+        # ADD event checking if bot instance is provided
+        if bot_instance and hasattr(bot_instance, 'positions'):
+            symbols = list(bot_instance.positions.keys()) if bot_instance.positions else ['SPY']
+            event_types = await self.event_manager.check_market_events(symbols)
+            metrics['events'] = event_types
+        
         triggered_alerts = []
         
         for rule in self.alert_rules:
@@ -204,6 +328,14 @@ class SmartAlertSystem:
                 message += f"  Daily P&L: ${metrics.get('daily_pnl', 0):.2f}\n"
             elif alert.name == "system_health_degraded":
                 message += f"  Health Score: {metrics.get('health_score', 0):.1%}\n"
+            elif alert.name == "earnings_week_detected":
+                message += f"  Earnings announcement detected for tracked symbols\n"
+            elif alert.name == "fomc_meeting_detected":
+                message += f"  FOMC meeting within 2 days - expect volatility\n"
+            elif alert.name == "negative_news_detected":
+                message += f"  Negative news detected about tracked symbols\n"
+            elif alert.name == "market_stress_elevated":
+                message += f"  Market stress indicators elevated\n"
             message += "\n"
             
         if is_critical:
@@ -371,14 +503,16 @@ class DailyDigestGenerator:
         self.report_time = "18:00"  # 6 PM ET
         
     async def generate_daily_digest(self) -> Dict:
-        """Generate comprehensive daily digest"""
+        """Generate comprehensive daily digest with events"""
         digest = {
             'date': datetime.now().strftime('%Y-%m-%d'),
             'performance': await self._get_performance_summary(),
             'trades': await self._get_trade_summary(),
             'market_analysis': await self._get_market_analysis(),
             'system_health': await self._get_system_health(),
-            'recommendations': await self._get_recommendations()
+            'recommendations': await self._get_recommendations(),
+            'events': await self._get_events_summary(),
+            'market_regime': self._get_market_regime_assessment()
         }
         
         return digest
@@ -465,6 +599,34 @@ class DailyDigestGenerator:
             recommendations.append("Unable to generate recommendations - check system status")
             
         return recommendations
+
+    async def _get_events_summary(self) -> Dict:
+        """Get events summary for daily digest"""
+        try:
+            if hasattr(self.bot, 'alert_system') and hasattr(self.bot.alert_system, 'event_manager'):
+                return self.bot.alert_system.event_manager.get_events_summary()
+            else:
+                return {'events': 'Event manager not available'}
+        except Exception as e:
+            return {'events_error': str(e)}
+
+    def _get_market_regime_assessment(self) -> Dict:
+        """Get market regime assessment"""
+        try:
+            if hasattr(self.bot, 'alert_system') and hasattr(self.bot.alert_system, 'event_manager'):
+                return self.bot.alert_system.event_manager.get_market_regime_assessment()
+            else:
+                return {
+                    'regime': 'unknown',
+                    'risk_score': 0,
+                    'recommendation': 'Unable to assess market regime'
+                }
+        except Exception as e:
+            return {
+                'regime': 'error',
+                'risk_score': 0,
+                'recommendation': f'Error assessing regime: {str(e)}'
+            }
         
     def _get_best_trade_today(self) -> Dict:
         """Get best trade today"""

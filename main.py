@@ -19,6 +19,11 @@ import numpy as np
 
 # Import original modules
 from algo_trading_bot_v5 import AlgoTradingBot, TradingMetrics
+from fundamental_data import FundamentalDataProvider
+from economic_calendar import EconomicCalendar
+from news_sentiment import NewsSentimentAnalyzer
+from market_events import MarketEventManager
+from monitoring import SmartAlertSystem, DailyDigestGenerator, AutomatedDashboard, NotificationConfig
 
 class AutonomousTradingBot(AlgoTradingBot):
     """
@@ -53,6 +58,66 @@ class AutonomousTradingBot(AlgoTradingBot):
         self.dashboard_data = {}
         
         self.logger.info("Autonomous Trading Bot v3.0 initialized")
+
+        try:
+            # Initialize fundamental data provider
+            if os.getenv('ALPHA_VANTAGE_KEY'):
+                self.fundamental_data = FundamentalDataProvider(os.getenv('ALPHA_VANTAGE_KEY'))
+                self.logger.info("Fundamental data provider initialized")
+            else:
+                self.fundamental_data = None
+                self.logger.warning("Alpha Vantage key not found - fundamental analysis disabled")
+                
+            # Initialize economic calendar
+            if os.getenv('FRED_API_KEY'):
+                self.economic_calendar = EconomicCalendar(os.getenv('FRED_API_KEY'))
+                self.logger.info("Economic calendar initialized")
+            else:
+                self.economic_calendar = None
+                self.logger.warning("FRED API key not found - economic analysis disabled")
+                
+            # Initialize news sentiment analyzer
+            if os.getenv('NEWS_API_KEY'):
+                self.news_analyzer = NewsSentimentAnalyzer(os.getenv('NEWS_API_KEY'))
+                self.logger.info("News sentiment analyzer initialized")
+            else:
+                self.news_analyzer = None
+                self.logger.warning("News API key not found - news analysis disabled")
+                
+            # Initialize market events manager
+            self.event_manager = MarketEventManager(self)
+            self.logger.info("Market events manager initialized")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to initialize enhanced components: {str(e)}")
+            # Set to None if initialization fails
+            self.fundamental_data = None
+            self.economic_calendar = None
+            self.news_analyzer = None
+            self.event_manager = None
+
+         # Initialize monitoring and alerting system
+        try:
+            # Get notification configuration
+            notification_config = NotificationConfig().config
+            
+            # Initialize smart alert system
+            self.alert_system = SmartAlertSystem(notification_config)
+            self.logger.info("Smart alert system initialized")
+            
+            # Initialize daily digest generator
+            self.digest_generator = DailyDigestGenerator(self)
+            self.logger.info("Daily digest generator initialized")
+            
+            # Initialize dashboard
+            self.dashboard = AutomatedDashboard(self)
+            self.logger.info("Automated dashboard initialized")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to initialize monitoring systems: {str(e)}")
+            self.alert_system = None
+            self.digest_generator = None
+            self.dashboard = None
         
     def _load_state(self) -> Dict:
         """Load saved state from disk"""
@@ -283,14 +348,29 @@ class AutonomousTradingBot(AlgoTradingBot):
             self.logger.error(f"Critical failure handling error: {str(e)}")
 
     async def _send_alert(self, message: str, severity: str = 'warning'):
-        """Send alert notification"""
+        """Enhanced alert sending using smart alert system"""
         try:
+            # Log the alert
             self.logger.warning(f"ALERT: {message}")
-            # In a real implementation, this would send email/SMS
-            print(f"🚨 {severity.upper()}: {message}")
             
+            # Use smart alert system if available
+            if self.alert_system:
+                # Create metrics for alert evaluation
+                alert_metrics = {
+                    'custom_alert': True,
+                    'alert_message': message,
+                    'severity': severity,
+                    'events': ['custom_alert']
+                }
+                await self.alert_system.evaluate_alerts(alert_metrics)
+            else:
+                # Fallback to simple print
+                print(f"🚨 {severity.upper()}: {message}")
+                
         except Exception as e:
             self.logger.error(f"Alert sending failed: {str(e)}")
+            # Ultimate fallback
+            print(f"🚨 {severity.upper()}: {message}")
 
     async def _send_daily_digest(self, digest: Dict):
         """Send daily digest"""
@@ -429,8 +509,9 @@ class AutonomousTradingBot(AlgoTradingBot):
             return 'closed'
 
     async def _handle_pre_market_trading(self):
-        """Handle pre-market trading (simplified)"""
-        self.logger.debug("Pre-market session - limited trading")
+        """Enhanced pre-market trading with event awareness"""
+        self.logger.debug("Pre-market session - enhanced event-aware trading")
+        
         # Only trade most liquid symbols in pre-market
         liquid_symbols = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'TSLA']
         
@@ -439,12 +520,26 @@ class AutonomousTradingBot(AlgoTradingBot):
                 continue
                 
             try:
+                # Get pre-market risk adjustment
+                pre_market_adjustment = 0.5  # Default 50% reduction
+                
+                if self.event_manager:
+                    pre_market_adjustment = self.event_manager.get_pre_market_risk_adjustment(symbol)
+                    
+                if pre_market_adjustment == 0.0:
+                    self.logger.debug(f"Pre-market trading blocked for {symbol}")
+                    continue
+                    
+                # Generate signal with event awareness
                 signal = await self._generate_enhanced_signal(symbol)
                 if signal:
-                    # Reduce position size for pre-market
+                    # Apply additional pre-market risk reduction
                     original_risk = self.config['RISK_PCT']
-                    self.config['RISK_PCT'] = original_risk * 0.5
+                    self.config['RISK_PCT'] = original_risk * pre_market_adjustment
+                    
                     await self._execute_enhanced_trade(symbol, signal)
+                    
+                    # Restore original risk
                     self.config['RISK_PCT'] = original_risk
                     
             except Exception as e:
@@ -477,29 +572,56 @@ class AutonomousTradingBot(AlgoTradingBot):
         await self._monitor_positions_enhanced()
 
     async def _generate_enhanced_signal(self, symbol: str) -> Optional[str]:
-        """Generate trading signal with ML enhancement"""
-        # Base strategy signals
-        trend_signal = self.trend_following_strategy(symbol)
-        mean_rev_signal = self.mean_reversion_strategy(symbol)
-        
-        # ML signal if enabled
-        ml_signal = None
-        if self.config.get('USE_ML_SIGNALS', False):
-            ml_signal = self.ml_enhanced_signal(symbol)
+        """Generate trading signal with event-aware enhancements"""
+        try:
+            # Get base technical signals
+            trend_signal = self.trend_following_strategy(symbol)
+            mean_rev_signal = self.mean_reversion_strategy(symbol)
             
-        # Combine signals
-        if self.config['STRATEGY'] == 'combined':
-            # Require 2 out of 3 signals to agree
-            signals = [s for s in [trend_signal, mean_rev_signal, ml_signal] if s is not None]
-            if signals.count('buy') >= 2:
-                return 'buy'
-            elif signals.count('sell') >= 2:
-                return 'sell'
+            # ML signal if enabled
+            ml_signal = None
+            if self.config.get('USE_ML_SIGNALS', False):
+                ml_signal = self.ml_enhanced_signal(symbol)
                 
-        return trend_signal or mean_rev_signal
+            # Combine base signals
+            if self.config['STRATEGY'] == 'combined':
+                signals = [s for s in [trend_signal, mean_rev_signal, ml_signal] if s is not None]
+                if signals.count('buy') >= 2:
+                    base_signal = 'buy'
+                elif signals.count('sell') >= 2:
+                    base_signal = 'sell'
+                else:
+                    base_signal = None
+            else:
+                base_signal = trend_signal or mean_rev_signal
+                
+            # If no base signal, return None
+            if not base_signal:
+                return None
+                
+            # NEW: Event-driven risk assessment
+            if self.event_manager:
+                should_enter, size_multiplier, reason = self.event_manager.should_enter_position(symbol, base_signal)
+                
+                if not should_enter:
+                    self.logger.info(f"Trade blocked for {symbol}: {reason}")
+                    return None
+                    
+                # Store the size multiplier for later use in position sizing
+                self._event_risk_adjustments = getattr(self, '_event_risk_adjustments', {})
+                self._event_risk_adjustments[symbol] = size_multiplier
+                
+                if size_multiplier < 1.0:
+                    self.logger.info(f"Position size adjusted for {symbol}: {size_multiplier:.2f} - {reason}")
+            
+            return base_signal
+            
+        except Exception as e:
+            self.logger.error(f"Enhanced signal generation failed for {symbol}: {str(e)}")
+            return None
 
     async def _monitor_positions_enhanced(self):
-        """Enhanced position monitoring"""
+        """Enhanced position monitoring with event-driven exits"""
         for symbol in list(self.positions.keys()):
             try:
                 position = self.positions[symbol]
@@ -511,33 +633,28 @@ class AutonomousTradingBot(AlgoTradingBot):
                     
                 current_price = (quote_data['bid'].iloc[0] + quote_data['ask'].iloc[0]) / 2
                 
-                # Calculate metrics
+                # Calculate current P&L
                 pnl = (current_price - position.entry_price) * position.quantity
                 pnl_pct = (current_price / position.entry_price - 1) * 100
                 hold_time = datetime.now() - position.timestamp
                 
-                # Exit conditions
+                # NEW: Event-driven exit check
+                should_exit_event = False
                 exit_reason = None
                 
-                # Time-based exit
-                if hold_time > timedelta(hours=24):
-                    exit_reason = "Max hold time reached"
+                if self.event_manager:
+                    should_exit_event, exit_reason = self.event_manager.should_exit_position(symbol, pnl)
                     
-                # Volatility-based exit
-                if await self._check_volatility_exit(symbol, position):
-                    exit_reason = "High volatility exit"
+                # Existing exit conditions
+                if (should_exit_event or 
+                    current_price <= position.stop_loss or 
+                    current_price >= position.take_profit or
+                    hold_time > timedelta(hours=24)):
                     
-                # ML-based exit signal
-                if self.config.get('USE_ML_SIGNALS', False):
-                    ml_exit = await self._check_ml_exit_signal(symbol, position)
-                    if ml_exit:
-                        exit_reason = "ML exit signal"
-                        
-                # Execute exit if needed
-                if exit_reason or current_price <= position.stop_loss or current_price >= position.take_profit:
-                    await self._exit_position_enhanced(symbol, current_price, exit_reason or "Stop/Target hit")
+                    final_reason = exit_reason if should_exit_event else "Stop/Target/Time limit hit"
+                    await self._exit_position_enhanced(symbol, current_price, final_reason)
                     
-                # Update position metrics
+                # Update position metrics for dashboard
                 self._update_position_metrics(symbol, {
                     'current_price': current_price,
                     'pnl': pnl,
@@ -546,7 +663,7 @@ class AutonomousTradingBot(AlgoTradingBot):
                 })
                 
             except Exception as e:
-                self.logger.error(f"Position monitoring error for {symbol}: {str(e)}")
+                self.logger.error(f"Enhanced position monitoring error for {symbol}: {str(e)}")
 
     def _handle_shutdown(self, signum, frame):
         """Handle graceful shutdown"""
@@ -592,6 +709,8 @@ class AutonomousTradingBot(AlgoTradingBot):
         # Main loop
         loop_count = 0
         last_state_save = datetime.now()
+        last_alert_check = datetime.now()
+        last_digest_time = datetime.now()
         
         while not self.shutdown_requested:
             try:
@@ -624,15 +743,27 @@ class AutonomousTradingBot(AlgoTradingBot):
                 
                 # Update metrics and alerts
                 await self._update_metrics_and_alerts()
+
+                # ALERT EVALUATION (Every 5 minutes)
+                if datetime.now() - last_alert_check > timedelta(minutes=5):
+                    await self._evaluate_alerts()
+                    last_alert_check = datetime.now()
                 
+                # DAILY DIGEST GENERATION (Once per day at 6 PM)
+                current_hour = datetime.now().hour
+                if (current_hour == 18 and  # 6 PM
+                    datetime.now() - last_digest_time > timedelta(hours=23)):  # Once per day
+                    await self._generate_daily_digest()
+                    last_digest_time = datetime.now()
+
                 # Save state periodically
                 if datetime.now() - last_state_save > timedelta(seconds=self.config['state_save_interval']):
                     self._save_state()
                     last_state_save = datetime.now()
                     
                 # Dashboard update
-                if loop_count % 5 == 0:  # Every 5 loops
-                    self._update_dashboard()
+                if loop_count % 10 == 0:
+                    self._update_monitoring_dashboard()
                     
                 # Log progress
                 if loop_count % 100 == 0:
@@ -650,12 +781,27 @@ class AutonomousTradingBot(AlgoTradingBot):
                 self.consecutive_errors += 1
                 self.logger.error(f"Error in main loop: {str(e)}", exc_info=True)
                 
+                if (self.consecutive_errors >= 5 and 
+                self.alert_system and 
+                datetime.now() - last_alert_check > timedelta(minutes=10)):
+
+                # Trigger critical system alert
+                    await self.alert_system.evaluate_alerts({
+                        'daily_pnl': self.daily_pnl,
+                        'consecutive_errors': self.consecutive_errors,
+                        'events': ['system_errors'],
+                        'severity': 'critical'
+                    })
+                    last_alert_check = datetime.now()
+                
+                # Check if we've hit the maximum error threshold
                 if self.consecutive_errors >= self.config['max_consecutive_errors']:
                     await self._handle_critical_failure()
-                    break
+                    break  # Exit the main loop
                     
-                # Exponential backoff
-                await asyncio.sleep(min(300, 30 * (2 ** self.consecutive_errors)))
+                # Exponential backoff: wait longer after each consecutive error
+                backoff_time = min(300, 30 * (2 ** self.consecutive_errors))
+                await asyncio.sleep(backoff_time)
                 
         # Cleanup
         await self._shutdown_cleanup()
@@ -680,6 +826,90 @@ class AutonomousTradingBot(AlgoTradingBot):
         except Exception as e:
             self.logger.error(f"Failed to initialize components: {str(e)}")
             raise
+
+    # ADD this new method to the AutonomousTradingBot class:
+
+    async def _evaluate_alerts(self):
+        """Evaluate alerts based on current metrics"""
+        if not self.alert_system:
+            return
+            
+        try:
+            # Collect current metrics for alert evaluation
+            account_info = self.get_account_info()
+        
+            current_metrics = {
+                'timestamp': datetime.now().isoformat(),
+                'daily_pnl': self.daily_pnl,                    # Current day profit/loss
+                'equity': account_info['equity'],               # Total account value
+                'positions_count': len(self.positions),         # Number of open positions
+                'win_rate': self.metrics.calculate_win_rate(),  # Percentage of winning trades
+                'health_score': 0.85,                          # System health (0.0 to 1.0)
+                'active_symbols': list(self.positions.keys()), # Currently traded symbols
+                'consecutive_errors': self.consecutive_errors   # Error tracking
+            }
+            
+            # Evaluate alerts with bot instance for event checking
+            await self.alert_system.evaluate_alerts(current_metrics, bot_instance=self)
+            
+        except Exception as e:
+            self.logger.error(f"Alert evaluation failed: {str(e)}")
+
+
+    # ADD this new method for daily digest:
+    async def _generate_daily_digest(self):
+        """Generate and send daily digest"""
+        if not self.digest_generator:
+            return
+            
+        try:
+            # Generate comprehensive daily digest
+            digest = await self.digest_generator.generate_daily_digest()
+            
+            # Save to file
+            digest_filename = f'daily_digest_{datetime.now().strftime("%Y%m%d")}.json'
+            with open(digest_filename, 'w') as f:
+                json.dump(digest, f, indent=2)
+                
+            self.logger.info(f"Daily digest generated: {digest_filename}")
+            
+            # Could also email the digest here if configured
+            if self.alert_system and digest:
+                digest_summary = f"""
+                    Daily Trading Summary - {datetime.now().strftime('%Y-%m-%d')}
+                    Daily P&L: ${digest.get('performance', {}).get('daily_pnl', 0):.2f}
+                    Total Trades: {digest.get('performance', {}).get('trades_count', 0)}
+                    Win Rate: {digest.get('performance', {}).get('win_rate', 0):.1f}%
+            """
+            await self._send_alert(digest_summary, severity='info')
+
+            return digest
+            
+        except Exception as e:
+            self.logger.error(f"Daily digest generation failed: {str(e)}")
+
+    # ADD this new method for dashboard updates:
+
+    def _update_monitoring_dashboard(self):
+        """Update monitoring dashboard"""
+        if not self.dashboard:
+            return
+            
+        try:
+            # Generate HTML dashboard
+            dashboard_html = self.dashboard.generate_dashboard_html()
+            
+            # Save dashboard HTML file
+            with open('dashboard.html', 'w') as f:
+                f.write(dashboard_html)
+                
+            # Also update JSON dashboard for API access
+            self._update_dashboard()  # Your existing method
+            self.logger.debug("Monitoring dashboard updated")
+            
+        except Exception as e:
+            self.logger.error(f"Dashboard update failed: {str(e)}")
+
 
 # Entry point
 if __name__ == "__main__":
@@ -709,11 +939,19 @@ if __name__ == "__main__":
         # Infrastructure
         'USE_CLOUD_BACKUP': False,  # Start with local only
         'MAX_DAILY_INFRA_COST': 10.0,
+
+        # NEW: Monitoring Configuration
+        'monitoring': {
+        'alerts_enabled': True,
+        'alert_check_interval': 300,  # 5 minutes
+        'daily_digest_enabled': True,
+        'dashboard_enabled': True
+    },
         
         # Alerts Configuration
         'alerts': {
             'email_enabled': True,
-            'sms_enabled': True,
+            'sms_enabled': False,
             'critical_only_sms': True,
             'daily_digest_time': '18:00'
         },
@@ -721,7 +959,13 @@ if __name__ == "__main__":
         # Autonomous Features
         'AUTO_RECOVERY_ENABLED': True,
         'SMART_ALERTS_ENABLED': True,
-        'CLOSE_ON_SHUTDOWN': False
+        'CLOSE_ON_SHUTDOWN': False,
+
+    # Notification Settings
+    'email_enabled': True,
+    'sms_enabled': True,  # Only if you have Twilio setup
+    'telegram_enabled': False,
+    'discord_enabled': False
     }
     
     # Validate required environment variables
