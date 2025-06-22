@@ -1,0 +1,109 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Trading Bot Dashboard",
+    "tags": ["trading", "bot"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Daily P&L",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "trading_bot_daily_pnl",
+            "legendFormat": "Daily P&L"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": -1000},
+                {"color": "yellow", "value": 0},
+                {"color": "green", "value": 500}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "title": "Account Equity",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "trading_bot_equity",
+            "legendFormat": "Total Equity"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
+      },
+      {
+        "title": "Active Positions",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "trading_bot_positions",
+            "legendFormat": "Positions"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "title": "Win Rate",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "trading_bot_win_rate",
+            "legendFormat": "Win Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 50},
+                {"color": "green", "value": 65}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "title": "System Health",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "trading_bot_system_health",
+            "legendFormat": "Health Score"
+          },
+          {
+            "expr": "trading_bot_memory_usage",
+            "legendFormat": "Memory (MB)"
+          },
+          {
+            "expr": "trading_bot_cpu_usage",
+            "legendFormat": "CPU %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

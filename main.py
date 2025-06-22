@@ -572,26 +572,53 @@ class AutonomousTradingBot(AlgoTradingBot):
         await self._monitor_positions_enhanced()
 
     async def _generate_enhanced_signal(self, symbol: str) -> Optional[str]:
-        """Generate trading signal with event-aware enhancements"""
+        """Generate trading signal with enhanced conflict resolution"""
         try:
             # Get base technical signals
             trend_signal = self.trend_following_strategy(symbol)
             mean_rev_signal = self.mean_reversion_strategy(symbol)
             
-            # ML signal if enabled
+            # ML signal if enabled (with error handling)
             ml_signal = None
             if self.config.get('USE_ML_SIGNALS', False):
-                ml_signal = self.ml_enhanced_signal(symbol)
-                
-            # Combine base signals
+                try:
+                    ml_signal = self.ml_enhanced_signal(symbol)
+                except Exception as e:
+                    self.logger.debug(f"ML signal failed for {symbol}: {str(e)}")
+                    ml_signal = None
+                    
+            # Log signals for debugging
+            signals_info = {
+                'trend': trend_signal,
+                'mean_reversion': mean_rev_signal, 
+                'ml': ml_signal
+            }
+            self.logger.debug(f"Signals for {symbol}: {signals_info}")
+            
+            # Enhanced signal combination logic
             if self.config['STRATEGY'] == 'combined':
                 signals = [s for s in [trend_signal, mean_rev_signal, ml_signal] if s is not None]
-                if signals.count('buy') >= 2:
-                    base_signal = 'buy'
-                elif signals.count('sell') >= 2:
-                    base_signal = 'sell'
+                
+                if not signals:
+                    return None
+                    
+                # Count signal types
+                buy_count = signals.count('buy')
+                sell_count = signals.count('sell')
+                
+                # Require majority consensus (at least 2 out of 3, or 1 if only 1 signal)
+                if len(signals) >= 2:
+                    if buy_count >= 2:
+                        base_signal = 'buy'
+                    elif sell_count >= 2:
+                        base_signal = 'sell'
+                    else:
+                        # Conflicting signals - no trade
+                        self.logger.debug(f"Conflicting signals for {symbol}: {signals_info}")
+                        return None
                 else:
-                    base_signal = None
+                    # Only one signal available
+                    base_signal = signals[0]
             else:
                 base_signal = trend_signal or mean_rev_signal
                 
@@ -599,7 +626,7 @@ class AutonomousTradingBot(AlgoTradingBot):
             if not base_signal:
                 return None
                 
-            # NEW: Event-driven risk assessment
+            # Event-driven risk assessment
             if self.event_manager:
                 should_enter, size_multiplier, reason = self.event_manager.should_enter_position(symbol, base_signal)
                 
@@ -607,7 +634,7 @@ class AutonomousTradingBot(AlgoTradingBot):
                     self.logger.info(f"Trade blocked for {symbol}: {reason}")
                     return None
                     
-                # Store the size multiplier for later use in position sizing
+                # Store the size multiplier for position sizing
                 self._event_risk_adjustments = getattr(self, '_event_risk_adjustments', {})
                 self._event_risk_adjustments[symbol] = size_multiplier
                 
@@ -619,7 +646,7 @@ class AutonomousTradingBot(AlgoTradingBot):
         except Exception as e:
             self.logger.error(f"Enhanced signal generation failed for {symbol}: {str(e)}")
             return None
-
+    
     async def _monitor_positions_enhanced(self):
         """Enhanced position monitoring with event-driven exits"""
         for symbol in list(self.positions.keys()):

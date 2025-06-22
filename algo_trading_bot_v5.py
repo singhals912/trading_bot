@@ -356,6 +356,29 @@ class AlgoTradingBot:
                     continue
         
         return np.mean(correlations) if correlations else 0.0
+    
+    def _calculate_macd(self, prices: pd.Series, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Tuple[pd.Series, pd.Series]:
+        """
+        Calculate MACD (Moving Average Convergence Divergence) indicator
+        Returns: (macd_line, signal_line)
+        """
+        try:
+            # Calculate exponential moving averages
+            ema_fast = prices.ewm(span=fast_period).mean()
+            ema_slow = prices.ewm(span=slow_period).mean()
+            
+            # MACD line = difference between fast and slow EMA
+            macd_line = ema_fast - ema_slow
+            
+            # Signal line = EMA of MACD line
+            signal_line = macd_line.ewm(span=signal_period).mean()
+            
+            return macd_line, signal_line
+            
+        except Exception as e:
+            self.logger.error(f"MACD calculation failed: {str(e)}")
+            # Return empty series if calculation fails
+            return pd.Series(dtype=float), pd.Series(dtype=float)
 
     def _detect_market_regime(self) -> str:
         """Detect current market regime for risk adjustment"""
@@ -753,19 +776,29 @@ class AlgoTradingBot:
                 timeframe=TimeFrame.Day
             )
             
-            df = self.data_client.get_stock_bars(request).df.reset_index()
-
-            # df = pd.DataFrame(bars[symbol]).reset_index(drop=True)
+            bars_response = self.data_client.get_stock_bars(request)
+            
+            # NEW: Better error handling for the response
+            if bars_response is None:
+                self.logger.debug(f"No bars response for {symbol}")
+                return pd.DataFrame()
+                
+            # Check if symbol exists in response
+            if not hasattr(bars_response, 'df') or bars_response.df is None:
+                self.logger.debug(f"No dataframe in response for {symbol}")
+                return pd.DataFrame()
+                
+            df = bars_response.df.reset_index()
             
             # Ensure we have enough data
             if len(df) < days * 0.8:  # At least 80% of requested days
-                self.logger.warning(f"Insufficient historical data for {symbol}: {len(df)} bars")
+                self.logger.debug(f"Insufficient historical data for {symbol}: {len(df)} bars")
                 return pd.DataFrame()
                 
             return df.tail(days)  # Return only requested number of days
             
         except Exception as e:
-            self.logger.error(f"Historical data fetch failed for {symbol}: {str(e)}")
+            self.logger.debug(f"Historical data fetch failed for {symbol}: {str(e)}")
             return pd.DataFrame()
 
     def _calculate_stochastic(self, data: pd.DataFrame, k_period: int = 14, d_period: int = 3) -> Tuple[pd.Series, pd.Series]:
@@ -812,17 +845,16 @@ class AlgoTradingBot:
         """Enhanced symbol selection with volume and liquidity filters"""
         # Base universe of liquid stocks
         base_symbols = [
-            'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NVDA', 
-            'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA', 'DIS',
-            'ADBE', 'NFLX', 'CRM', 'PYPL', 'INTC', 'AMD', 'QCOM',
-            'BAC', 'XOM', 'WMT', 'LLY', 'ABBV', 'COST', 'PFE', 'KO', 
-            'AVGO', 'TMO', 'ACN', 'MRK', 'CSCO', 'PEP', 'ABT', 'CVX', 
-            # add more symbols as per the universe
-            'VZ', 'NKE', 'WFC', 'T', 'ORCL', 'CMCSA', 'IBM', 'MDT',
-            'TXN', 'AMGN', 'HON', 'LLY', 'BMY', 'SBUX', 'CAT',
-            'LMT', 'MMM', 'BA', 'GS', 'RTX', 'C', 'USB', 'SCHW',
-            'INTU', 'NOW', 'ZM', 'SNAP', 'TWTR', 'SQ', 'DOCU',
-            'ZM', 'UBER', 'LYFT', 'PLTR', 'CRWD', 'DDOG', 'SNOW'
+        'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NVDA', 
+        'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA', 'DIS',
+        'ADBE', 'NFLX', 'CRM', 'PYPL', 'INTC', 'AMD', 'QCOM',
+        'BAC', 'XOM', 'WMT', 'LLY', 'ABBV', 'COST', 'PFE', 'KO', 
+        'AVGO', 'TMO', 'ACN', 'MRK', 'CSCO', 'PEP', 'ABT', 'CVX', 
+        'VZ', 'NKE', 'WFC', 'T', 'ORCL', 'CMCSA', 'IBM', 'MDT',
+        'TXN', 'AMGN', 'HON', 'BMY', 'SBUX', 'CAT',
+        'LMT', 'MMM', 'BA', 'GS', 'RTX', 'C', 'USB', 'SCHW',
+        'INTU', 'NOW', 'ZM', 'SNAP', 'DOCU',
+        'UBER', 'LYFT', 'PLTR', 'CRWD', 'DDOG', 'SNOW'
         ]
         
         # Filter based on volume and avoid penny stocks
@@ -834,6 +866,7 @@ class AlgoTradingBot:
                     filtered_symbols.append(symbol)
             except Exception as e:
                 self.logger.debug(f"Skipping {symbol} due to data issue: {str(e)}")
+                # Continue to next symbol instead of logging error
                 
         self.logger.info(f"Selected {len(filtered_symbols)} symbols for analysis")
         return filtered_symbols
