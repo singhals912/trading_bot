@@ -1,20 +1,23 @@
 {
-  "last_run": "2025-06-23T11:26:48.816298",
-  "total_trades": 20,
-  "total_pnl": 4926.8099999999995,
-  "uptime_hours": 0,
-  "last_positions": {},
-  "current_positions": {
-    "MSFT": {
-      "entry_price": 478.87,
-      "quantity": 3,
-      "timestamp": "2025-06-23T11:17:39.439895"
-    }
+  "timestamp": "2025-06-23T16:21:40.300910",
+  "daily_pnl": 0.0,
+  "performance_data": {
+    "start_time": "2025-06-23 16:16:40.096920",
+    "total_trades": 0,
+    "winning_trades": 0,
+    "total_pnl": 0.0
   },
-  "performance_stats": {
-    "best_day": 0.0,
-    "worst_day": 0.0,
-    "consecutive_winning_days": 0,
-    "consecutive_losing_days": 0
+  "positions_count": 0,
+  "trades_count": 0,
+  "config": {
+    "API_KEY": "PK6Y4XBDRDJHJ8ZKF81B",
+    "SECRET_KEY": "s9Yw8MdroJlbR4eKA8IdNzfy2e6pZiYF3swivgzy",
+    "PAPER_TRADING": true,
+    "RISK_PCT": 0.015,
+    "MAX_POSITIONS": 3,
+    "MAX_DAILY_LOSS": 0.02,
+    "MAX_SYMBOLS": 15,
+    "STRATEGY": "combined",
+    "CLOSE_ON_SHUTDOWN": false
   }
 }

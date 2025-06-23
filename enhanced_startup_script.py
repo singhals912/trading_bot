@@ -11,6 +11,7 @@ import logging
 import traceback
 from datetime import datetime
 from pathlib import Path
+from report_integration import integrate_portfolio_reporting
 
 # Add project root to path
 project_root = Path(__file__).parent

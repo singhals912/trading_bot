@@ -1,0 +1,27 @@
+{
+    "trading": {
+        "strategy": "combined",
+        "risk_pct": 0.015,
+        "max_positions": 3,
+        "max_daily_loss": 0.02
+    },
+    "features": {
+        "extended_hours": true,
+        "sentiment_analysis": true,
+        "fundamental_analysis": true,
+        "economic_events": true,
+        "circuit_breaker": true,
+        "advanced_monitoring": true,
+        "ml_signals": false
+    },
+    "data_sources": {
+        "primary": "alpaca",
+        "backup": "yfinance",
+        "news": "alpha_vantage"
+    },
+    "alerts": {
+        "email": true,
+        "dashboard": true,
+        "prometheus": false
+    }
+}

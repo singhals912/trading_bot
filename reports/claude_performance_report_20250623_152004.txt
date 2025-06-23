@@ -1,0 +1,79 @@
+
+🤖 **AUTONOMOUS TRADING BOT PERFORMANCE REPORT**
+📅 **Report Generated:** 2025-06-23 15:20:04
+
+🟡 **SYSTEM STATUS**
+Bot Status: FALLBACK
+Last Update: 2025-06-23T15:18:58.258726
+System Health: 🔴 (230 errors, 21513 warnings)
+Uptime: 0.0 hours
+
+💰 **ACCOUNT PERFORMANCE**
+Current Equity: $100,584.56
+Daily P&L: 📈 $962.49
+Total P&L: $962.49
+Active Positions: 1
+
+📊 **TRADING STATISTICS**
+Total Trades Executed: 5
+Win Rate: 100.0%
+System Logs: 32,805 entries
+Recent Error Rate: 0.70%
+
+📈 **PERFORMANCE ANALYSIS**
+Best Day: $0.00
+Worst Day: $0.00
+Winning Streak: 0 days
+Losing Streak: 0 days
+
+⚙️ **SYSTEM CAPABILITIES**
+- ✅ Autonomous trading with technical analysis
+- ✅ Real-time market data processing
+- ✅ Risk management and position sizing
+- ✅ Extended hours trading support
+- ✅ Event-driven trade filtering
+- ✅ Comprehensive logging and monitoring
+- ✅ Automated reporting and alerts
+- ✅ Fallback modes for API failures
+
+🎯 **TRADING STRATEGY**
+- Multi-strategy approach (trend following + mean reversion)
+- Fundamental data integration (earnings calendar)
+- Economic event awareness (FOMC meetings)
+- News sentiment analysis
+- Adaptive stop losses and take profits
+- ML-enhanced signal generation (when enabled)
+
+📁 **DATA FILES ANALYSIS**
+✅ bot_state.json - Bot configuration and state
+✅ dashboard.json - Real-time performance dashboard
+✅ algo_trading.log - 32,805 log entries
+✅ trades.log - 87 trade records
+
+💡 **AI ANALYSIS & RECOMMENDATIONS**
+🟢 Strong daily performance - Consider scaling successful strategies
+🎯 Excellent win rate - Strategy is performing well
+⚠️ High error count - Check system stability and API connections
+📊 No daily digests found - Enable performance tracking
+
+🔗 **SYSTEM INTEGRATION STATUS**
+- Data Collection: ✅ Active
+- Performance Tracking: ⚠️ Partial
+- Trade Logging: ✅ Active
+- Error Monitoring: ✅ Active
+
+📋 **NEXT STEPS**
+1. Review any flagged recommendations above
+2. Monitor system performance over the next 24-48 hours
+3. Consider adjusting risk parameters if needed
+4. Ensure all monitoring systems are functioning
+5. Regular performance reviews recommended
+
+---
+**Report Notes:**
+- This analysis is based on available data files from your trading bot
+- Some metrics may be limited if the bot is newly started
+- Real-time performance may vary from historical analysis
+- Always verify trading decisions and monitor risk exposure
+
+**Disclaimer:** This is an automated analysis. Past performance does not guarantee future results. Always review and validate trading decisions.

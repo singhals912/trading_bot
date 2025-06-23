@@ -1,9 +1,9 @@
 # Trading Bot Metrics
-trading_bot_daily_pnl 4926.8099999999995
-trading_bot_equity 101165.07
-trading_bot_positions 1
-trading_bot_win_rate 95.0
-trading_bot_total_trades 20
+trading_bot_daily_pnl 0.0
+trading_bot_equity 100320.35
+trading_bot_positions 0
+trading_bot_win_rate 0.0
+trading_bot_total_trades 0
 trading_bot_system_health 85.0
-trading_bot_memory_usage_mb 3346.359375
-trading_bot_cpu_usage_percent 22.0
+trading_bot_memory_usage_mb 2802.4375
+trading_bot_cpu_usage_percent 13.1
