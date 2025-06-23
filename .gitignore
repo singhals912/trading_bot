@@ -15,3 +15,9 @@ build/
 bot_state.json
 dashboard.json
 .env
+sentiment_cache.json
+news_cache.json
+market_indicators.json
+economic_events.json
+metrics.prom
+data/

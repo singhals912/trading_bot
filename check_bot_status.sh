@@ -7,7 +7,7 @@ echo ""
 
 # Check if bot process is running
 echo "📊 BOT PROCESS:"
-BOT_PID=$(pgrep -f "python.*main.py" 2>/dev/null)
+BOT_PID=$(pgrep -f "python.*enhanced_startup_script.py" 2>/dev/null)
 if [ ! -z "$BOT_PID" ]; then
     echo "✅ Bot is running (PID: $BOT_PID)"
     echo "   Memory usage: $(ps -o rss= -p $BOT_PID 2>/dev/null | awk '{print int($1/1024)" MB"}' || echo 'N/A')"

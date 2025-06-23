@@ -646,6 +646,35 @@ class AutonomousTradingBot(AlgoTradingBot):
         except Exception as e:
             self.logger.error(f"Enhanced signal generation failed for {symbol}: {str(e)}")
             return None
+
+    def _update_monitoring_dashboard(self):
+        """Update monitoring dashboard using the new system"""
+        if not self.dashboard:
+            # Fallback to your existing dashboard method if new system isn't available
+            self._update_dashboard()
+            return
+            
+        try:
+            # Use the new monitoring system's dashboard
+            html_content = self.dashboard.generate_dashboard_html()
+            
+            # Save HTML dashboard
+            with open('dashboard.html', 'w', encoding='utf-8') as f:
+                f.write(html_content)
+                
+            # Also update your existing JSON dashboard
+            self._update_dashboard()
+            
+            self.logger.debug("Monitoring dashboard updated successfully")
+            
+        except Exception as e:
+            self.logger.error(f"Dashboard update failed: {str(e)}")
+            # Fallback to your existing method
+            try:
+                self._update_dashboard()
+            except Exception as fallback_error:
+                self.logger.error(f"Fallback dashboard also failed: {str(fallback_error)}")
+
     
     async def _monitor_positions_enhanced(self):
         """Enhanced position monitoring with event-driven exits"""
@@ -914,29 +943,6 @@ class AutonomousTradingBot(AlgoTradingBot):
             
         except Exception as e:
             self.logger.error(f"Daily digest generation failed: {str(e)}")
-
-    # ADD this new method for dashboard updates:
-
-    def _update_monitoring_dashboard(self):
-        """Update monitoring dashboard"""
-        if not self.dashboard:
-            return
-            
-        try:
-            # Generate HTML dashboard
-            dashboard_html = self.dashboard.generate_dashboard_html()
-            
-            # Save dashboard HTML file
-            with open('dashboard.html', 'w') as f:
-                f.write(dashboard_html)
-                
-            # Also update JSON dashboard for API access
-            self._update_dashboard()  # Your existing method
-            self.logger.debug("Monitoring dashboard updated")
-            
-        except Exception as e:
-            self.logger.error(f"Dashboard update failed: {str(e)}")
-
 
 # Entry point
 if __name__ == "__main__":

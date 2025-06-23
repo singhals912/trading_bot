@@ -669,23 +669,43 @@ class DailyDigestGenerator:
             return {}
 
 class AutomatedDashboard:
-    """Web-based dashboard for remote monitoring"""
+    """FIXED: Web-based dashboard for remote monitoring with proper CSS handling"""
     
     def __init__(self, bot_instance):
         self.bot = bot_instance
         self.dashboard_data = {}
         
     def generate_dashboard_html(self) -> str:
-        """Generate HTML dashboard"""
-        html_template = """
-<!DOCTYPE html>
+        """Generate HTML dashboard with FIXED CSS formatting"""
+        try:
+            # First, collect data safely
+            data = self._collect_dashboard_data()
+            
+            # Extract values with defaults
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            daily_pnl = data.get('daily_pnl', 0)
+            pnl_class = 'positive' if daily_pnl >= 0 else 'negative'
+            active_positions = len(getattr(self.bot, 'positions', {}))
+            win_rate = data.get('win_rate', 0)
+            health_score = data.get('health_score', 0.85)
+            health_class = self._get_health_class(health_score)
+            position_rows = self._generate_position_rows()
+            alerts_html = self._generate_alerts_html()
+            next_check = (datetime.now() + timedelta(minutes=5)).strftime('%H:%M')
+            
+            # FIXED: Use double braces for CSS and single braces for Python formatting
+            html_template = """<!DOCTYPE html>
 <html>
 <head>
     <title>Trading Bot Dashboard</title>
     <meta http-equiv="refresh" content="60">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        .metric-card { 
+        body {{ 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }}
+        .metric-card {{ 
             background: white; 
             padding: 20px; 
             margin: 10px; 
@@ -693,18 +713,50 @@ class AutomatedDashboard:
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: inline-block;
             min-width: 200px;
-        }
-        .metric-value { font-size: 24px; font-weight: bold; }
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
-        .warning { background-color: #fff3cd; }
-        .critical { background-color: #f8d7da; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        }}
+        .metric-value {{ 
+            font-size: 24px; 
+            font-weight: bold; 
+        }}
+        .positive {{ 
+            color: #4caf50; 
+        }}
+        .negative {{ 
+            color: #f44336; 
+        }}
+        .warning {{ 
+            background-color: #fff3cd; 
+        }}
+        .critical {{ 
+            background-color: #f8d7da; 
+        }}
+        table {{ 
+            width: 100%; 
+            border-collapse: collapse; 
+        }}
+        th, td {{ 
+            padding: 8px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }}
+        .header {{
+            text-align: center;
+            margin-bottom: 30px;
+        }}
+        .status-indicator {{
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #4caf50;
+        }}
     </style>
 </head>
 <body>
-    <h1>Trading Bot Status - {timestamp}</h1>
+    <div class="header">
+        <h1>Trading Bot Status - {timestamp}</h1>
+    </div>
     
     <div class="metrics">
         <div class="metric-card">
@@ -745,41 +797,65 @@ class AutomatedDashboard:
     
     <footer>
         <p>Last updated: {timestamp}</p>
-        <p>Next market check: {next_check}</p>
+        <p><span class="status-indicator"></span>Next market check: {next_check}</p>
     </footer>
 </body>
-</html>
-"""
+</html>"""
+            
+            # Format the template safely
+            return html_template.format(
+                timestamp=timestamp,
+                daily_pnl=daily_pnl,
+                pnl_class=pnl_class,
+                active_positions=active_positions,
+                win_rate=win_rate,
+                health_score=health_score,
+                health_class=health_class,
+                position_rows=position_rows,
+                alerts_html=alerts_html,
+                next_check=next_check
+            )
+            
+        except Exception as e:
+            # Return safe fallback HTML
+            return self._generate_safe_fallback_html(str(e))
         
-        # Populate template with current data
-        data = self._collect_dashboard_data()
-        
-        return html_template.format(
-            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            daily_pnl=data.get('daily_pnl', 0),
-            pnl_class='positive' if data.get('daily_pnl', 0) >= 0 else 'negative',
-            active_positions=len(getattr(self.bot, 'positions', {})),
-            win_rate=data.get('win_rate', 0),
-            health_score=data.get('health_score', 0.85),
-            health_class=self._get_health_class(data.get('health_score', 0.85)),
-            position_rows=self._generate_position_rows(),
-            alerts_html=self._generate_alerts_html(),
-            next_check=(datetime.now() + timedelta(minutes=5)).strftime('%H:%M')
-        )
+    def _generate_safe_fallback_html(self, error_msg: str) -> str:
+        """Generate safe fallback HTML when main generation fails"""
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Bot Dashboard - Error</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        .error {{ color: red; padding: 20px; border: 1px solid red; }}
+    </style>
+</head>
+<body>
+    <h1>Trading Bot Dashboard</h1>
+    <div class="error">
+        <h2>Dashboard Error</h2>
+        <p>Unable to generate dashboard properly.</p>
+        <p>Error: {error_msg}</p>
+        <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+    </div>
+</body>
+</html>"""
         
     def _collect_dashboard_data(self) -> Dict:
-        """Collect current dashboard data"""
+        """Collect current dashboard data safely"""
         try:
             return {
                 'daily_pnl': getattr(self.bot, 'daily_pnl', 0),
                 'win_rate': self.bot.metrics.calculate_win_rate() if hasattr(self.bot, 'metrics') else 0,
                 'health_score': 0.85  # Placeholder
             }
-        except:
+        except Exception as e:
+            print(f"Error collecting dashboard data: {e}")
             return {
                 'daily_pnl': 0,
                 'win_rate': 0,
-                'health_score': 0.85
+                'health_score': 0.5
             }
             
     def _get_health_class(self, score: float) -> str:
@@ -800,27 +876,51 @@ class AutomatedDashboard:
                 
             rows = []
             for symbol, position in positions.items():
-                rows.append(f"""
-                <tr>
-                    <td>{symbol}</td>
-                    <td>${getattr(position, 'entry_price', 0):.2f}</td>
-                    <td>${getattr(position, 'unrealized_pnl', 0):.2f}</td>
-                    <td>${getattr(position, 'stop_loss', 0):.2f}</td>
-                    <td>{self._calculate_duration(position)}</td>
-                </tr>
-                """)
+                try:
+                    entry_price = getattr(position, 'entry_price', 0)
+                    unrealized_pnl = getattr(position, 'unrealized_pnl', 0)
+                    stop_loss = getattr(position, 'stop_loss', 0)
+                    duration = self._calculate_duration(position)
+                    
+                    rows.append(f"""
+                    <tr>
+                        <td>{symbol}</td>
+                        <td>${entry_price:.2f}</td>
+                        <td>${unrealized_pnl:.2f}</td>
+                        <td>${stop_loss:.2f}</td>
+                        <td>{duration}</td>
+                    </tr>
+                    """)
+                except Exception as e:
+                    print(f"Error processing position {symbol}: {e}")
+                    
             return "".join(rows)
-        except:
+            
+        except Exception as e:
+            print(f"Error generating position rows: {e}")
             return "<tr><td colspan='5'>Error loading positions</td></tr>"
             
     def _generate_alerts_html(self) -> str:
         """Generate HTML for recent alerts"""
-        return "<p>No recent alerts</p>"  # Placeholder
+        try:
+            # Simple status display
+            api_status = "Connected" if self._test_api_connection() else "Disconnected"
+            return f"<p>API Status: {api_status}</p><p>No recent alerts</p>"
+        except:
+            return "<p>Status unavailable</p>"
+            
+    def _test_api_connection(self) -> bool:
+        """Test API connection"""
+        try:
+            self.bot.get_account_info()
+            return True
+        except:
+            return False
         
     def _calculate_duration(self, position) -> str:
         """Calculate position duration"""
         try:
-            entry_time = getattr(position, 'entry_time', datetime.now())
+            entry_time = getattr(position, 'timestamp', datetime.now())
             duration = datetime.now() - entry_time
             hours = int(duration.total_seconds() // 3600)
             minutes = int((duration.total_seconds() % 3600) // 60)
@@ -870,3 +970,60 @@ class NotificationConfig:
                 'webhook_url': os.getenv('DISCORD_WEBHOOK_URL')
             }
         }
+
+# QUICK FIX: Add this function to patch your existing bot
+def fix_dashboard_css_error(bot_instance):
+    """Quick fix to replace the problematic dashboard method"""
+    try:
+        # Create new dashboard instance
+        fixed_dashboard = AutomatedDashboard(bot_instance)
+        
+        # Replace the bot's dashboard update method
+        bot_instance._update_monitoring_dashboard = lambda: fixed_dashboard.generate_dashboard_html()
+        
+        # Test the fix
+        html_content = fixed_dashboard.generate_dashboard_html()
+        
+        # Save to file
+        with open('dashboard.html', 'w', encoding='utf-8') as f:
+            f.write(html_content)
+            
+        print("✅ Dashboard CSS error fixed successfully!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to fix dashboard: {str(e)}")
+        return False
+
+# Alternative quick fix - simpler version
+def simple_dashboard_fix(bot_instance):
+    """Even simpler fix - just update dashboard as JSON"""
+    def safe_dashboard_update():
+        try:
+            dashboard_data = {
+                'timestamp': datetime.now().isoformat(),
+                'daily_pnl': getattr(bot_instance, 'daily_pnl', 0),
+                'positions': len(getattr(bot_instance, 'positions', {})),
+                'status': 'running'
+            }
+            
+            try:
+                account = bot_instance.get_account_info()
+                dashboard_data['equity'] = account.get('equity', 0)
+            except:
+                dashboard_data['equity'] = 0
+            
+            # Save as JSON (no CSS issues)
+            with open('dashboard.json', 'w') as f:
+                json.dump(dashboard_data, f, indent=2, default=str)
+                
+        except Exception as e:
+            print(f"Dashboard update error: {e}")
+    
+    # Replace the method
+    bot_instance._update_monitoring_dashboard = safe_dashboard_update
+    print("✅ Dashboard fixed with JSON-only output")
+
+if __name__ == "__main__":
+    print("Fixed monitoring module loaded")
+    print("Use fix_dashboard_css_error(bot_instance) to apply the fix")
