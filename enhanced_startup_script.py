@@ -134,43 +134,62 @@ def install_dependencies():
         print("✅ All dependencies satisfied")
 
 def create_enhanced_config():
-    """Create enhanced configuration"""
+    """Create enhanced configuration - CONSOLIDATED VERSION"""
     print("⚙️  Creating enhanced configuration...")
     
     config = {
         # API Configuration
         'API_KEY': os.getenv('APCA_API_KEY_ID'),
         'SECRET_KEY': os.getenv('APCA_API_SECRET_KEY'),
+        'BASE_URL': os.getenv('APCA_API_BASE_URL', 'https://paper-api.alpaca.markets'),
         'PAPER_TRADING': os.getenv('PAPER_TRADING', 'True').lower() == 'true',
         
-        # Capital Management (Conservative defaults)
-        'TOTAL_CAPITAL': int(os.getenv('TOTAL_CAPITAL', '50000')),
-        'TRADING_CAPITAL': int(os.getenv('TRADING_CAPITAL', '10000')),
-        'RISK_PCT': float(os.getenv('RISK_PCT', '0.015')),  # 1.5%
-        'MAX_POSITIONS': int(os.getenv('MAX_POSITIONS', '3')),
-        'MAX_DAILY_LOSS': float(os.getenv('MAX_DAILY_LOSS', '0.02')),  # 2%
+        # Capital Management - UPDATED TO MATCH YOUR NEEDS
+        'TOTAL_CAPITAL': int(os.getenv('TOTAL_CAPITAL', '100000')),    # Increased from 50k
+        'TRADING_CAPITAL': int(os.getenv('TRADING_CAPITAL', '20000')), # Increased from 10k
+        'RISK_PCT': float(os.getenv('RISK_PCT', '0.015')),            # 1.5% (between startup 1% and main 2%)
+        'MAX_POSITIONS': int(os.getenv('MAX_POSITIONS', '3')),        # Updated from 1 to 3
+        'MAX_DAILY_LOSS': float(os.getenv('MAX_DAILY_LOSS', '0.025')), # 2.5% (slightly higher)
         
-        # Strategy Configuration
-        'STRATEGY': os.getenv('STRATEGY', 'combined'),
-        'USE_ML_SIGNALS': os.getenv('USE_ML_SIGNALS', 'False').lower() == 'true',
+        # Strategy Configuration - CONSOLIDATED
+        'STRATEGY': os.getenv('STRATEGY', 'combined'),  # CHANGED: Use 'combined' as default
+        'USE_ML_SIGNALS': os.getenv('USE_ML_SIGNALS', 'True').lower() == 'true',  # ENABLED by default
         'USE_ADAPTIVE_STOPS': True,
+        'ML_CONFIDENCE_THRESHOLD': float(os.getenv('ML_CONFIDENCE_THRESHOLD', '0.7')),
         
-        # Enhanced Features
-        'EXTENDED_HOURS_ENABLED': True,
-        'PRE_MARKET_RISK_REDUCTION': 0.3,
+        # Timing Configuration - FROM MAIN BOT
+        'LOOP_SLEEP': int(os.getenv('LOOP_SLEEP', '120')),  # 2 minutes (was 60s in main bot)
+        'LOG_LEVEL': os.getenv('LOG_LEVEL', 'INFO'),
+        
+        # Enhanced Features - BEST OF BOTH
+        'EXTENDED_HOURS_ENABLED': os.getenv('EXTENDED_HOURS_ENABLED', 'True').lower() == 'true',
+        'PRE_MARKET_RISK_REDUCTION': float(os.getenv('PRE_MARKET_RISK_REDUCTION', '0.5')),
         'AUTO_RECOVERY_ENABLED': True,
         'SMART_ALERTS_ENABLED': True,
-        'CLOSE_ON_SHUTDOWN': False,
+        'CLOSE_ON_SHUTDOWN': os.getenv('CLOSE_ON_SHUTDOWN', 'False').lower() == 'true',
+        
+        # Advanced Features - FROM MAIN BOT
+        'PORTFOLIO_OPTIMIZATION': os.getenv('PORTFOLIO_OPTIMIZATION', 'True').lower() == 'true',
+        'ADAPTIVE_RISK_MANAGEMENT': True,
+        'MARKET_MICROSTRUCTURE_ANALYSIS': True,
+        'USE_KELLY_CRITERION': True,
+        'MAX_PORTFOLIO_HEAT': float(os.getenv('MAX_PORTFOLIO_HEAT', '0.6')),
+        'MIN_LIQUIDITY_SCORE': float(os.getenv('MIN_LIQUIDITY_SCORE', '0.5')),
+        
+        # Execution Parameters - FROM MAIN BOT
+        'SMART_ORDER_ROUTING': True,
+        'MAX_SPREAD_PCT': float(os.getenv('MAX_SPREAD_PCT', '0.01')),  # 1% max spread
+        'USE_ADAPTIVE_STOPS': True,
         
         # Performance Optimizations
-        'MAX_CONSECUTIVE_ERRORS': 10,
-        'HEALTH_CHECK_INTERVAL': 300,
-        'STATE_SAVE_INTERVAL': 60,
-        'SYMBOL_CACHE_DURATION': 300,
-        'MAX_DAILY_API_CALLS': 1000,
+        'MAX_CONSECUTIVE_ERRORS': int(os.getenv('MAX_CONSECUTIVE_ERRORS', '10')),
+        'HEALTH_CHECK_INTERVAL': int(os.getenv('HEALTH_CHECK_INTERVAL', '300')),
+        'STATE_SAVE_INTERVAL': int(os.getenv('STATE_SAVE_INTERVAL', '60')),
+        'SYMBOL_CACHE_DURATION': int(os.getenv('SYMBOL_CACHE_DURATION', '300')),
+        'MAX_DAILY_API_CALLS': int(os.getenv('MAX_DAILY_API_CALLS', '1000')),
         'FALLBACK_MODE_ENABLED': True,
         
-        # Monitoring
+        # Monitoring - ENHANCED
         'monitoring': {
             'alerts_enabled': True,
             'alert_check_interval': 300,
@@ -182,10 +201,15 @@ def create_enhanced_config():
         'email_enabled': bool(os.getenv('EMAIL_SENDER')),
         'sms_enabled': bool(os.getenv('TWILIO_SID')),
         'telegram_enabled': False,
-        'discord_enabled': False
+        'discord_enabled': False,
+        
+        # Data Sources - OPTIONAL
+        'ALPHA_VANTAGE_KEY': os.getenv('ALPHA_VANTAGE_KEY', ''),
+        'FRED_API_KEY': os.getenv('FRED_API_KEY', ''),
+        'NEWS_API_KEY': os.getenv('NEWS_API_KEY', ''),
     }
     
-    print("✅ Configuration created")
+    print("✅ Enhanced consolidated configuration created")
     return config
 
 def create_startup_bot():

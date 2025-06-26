@@ -273,15 +273,15 @@ class IndustryGradeAutonomousBot(AlgoTradingBot):
         return time_since_refresh > cache_duration
 
     def _get_cached_symbols(self) -> List[str]:
-        """Get symbols from cache or refresh if needed"""
+        """Get symbols from cache or refresh if needed - SIMPLIFIED"""
         if self._should_refresh_symbol_cache():
-            symbols = self._select_symbols()
+            symbols = self._select_trading_symbols()  # Use trading-specific selection
             self.performance_metrics['symbol_analysis_cache'] = {
                 'symbols': symbols,
                 'timestamp': datetime.now()
             }
             self.performance_metrics['last_symbol_refresh'] = datetime.now()
-            self.logger.info(f"Symbol cache refreshed with {len(symbols)} symbols")
+            self.logger.info(f"Symbol cache refreshed with {len(symbols)} trading symbols")
             return symbols
         else:
             cached_symbols = self.performance_metrics['symbol_analysis_cache'].get('symbols', [])
@@ -289,7 +289,7 @@ class IndustryGradeAutonomousBot(AlgoTradingBot):
                 self.logger.debug(f"Using cached symbols: {len(cached_symbols)}")
                 return cached_symbols
             else:
-                return self._select_symbols()
+                return self._select_trading_symbols()
 
     def _determine_execution_strategy(self, symbol: str, quote_data: pd.DataFrame) -> str:
         """Determine optimal execution strategy"""
@@ -530,7 +530,7 @@ class IndustryGradeAutonomousBot(AlgoTradingBot):
 
     async def _handle_regular_trading(self):
         """Handle regular market hours trading with optimization"""
-        symbols = self._get_cached_symbols()  # Use cached symbols
+        symbols = self._select_trading_symbols()  # Use cached symbols
         
         # Add ML-enhanced filtering if not in fallback mode
         if self.config.get('USE_ML_SIGNALS', False) and not self.fallback_mode:
@@ -1280,25 +1280,77 @@ Status: {'Fallback Mode' if self.fallback_mode else 'Normal Operation'}
             self.logger.warning("Starting in fallback mode due to initialization errors")
 
     async def _preload_historical_data(self):
-        """Preload historical data for faster analysis"""
+        """FIXED: Enhanced historical data preloading with full symbol support"""
         try:
-            self.logger.info("Preloading historical data...")
-            symbols = self._select_symbols()[:5]  # Limit to top 5 for efficiency
+            self.logger.info("🚀 Starting ENHANCED historical data preloading...")
+            
+            # FIXED: Get ALL symbols, no artificial limit
+            symbols = self._select_symbols()  # REMOVED [:5] limit
+            total_symbols = len(symbols)
+            
+            self.logger.info(f"📊 Processing {total_symbols} symbols: {symbols}")
             
             preloaded_count = 0
-            for symbol in symbols:
+            failed_symbols = []
+            retry_count = 0
+            
+            # First pass: Try to load all symbols
+            for i, symbol in enumerate(symbols):
                 try:
+                    self.logger.debug(f"📈 Loading {symbol} ({i+1}/{total_symbols})...")
                     data = self._get_historical_data(symbol, days=50)
                     if not data.empty:
                         preloaded_count += 1
-                        self.logger.debug(f"Cached {len(data)} bars for {symbol}")
+                        self.logger.debug(f"✅ {symbol}: {len(data)} bars cached")
+                    else:
+                        failed_symbols.append(symbol)
+                        self.logger.debug(f"❌ {symbol}: No data returned")
                 except Exception as e:
-                    self.logger.debug(f"Failed to cache data for {symbol}: {e}")
-                    
+                    failed_symbols.append(symbol)
+                    self.logger.debug(f"❌ {symbol}: Error - {str(e)}")
+            
+            # Second pass: Retry failed symbols with shorter periods
+            if failed_symbols:
+                self.logger.info(f"🔄 Retrying {len(failed_symbols)} failed symbols with shorter periods...")
+                
+                for symbol in failed_symbols[:]:  # Copy list to avoid modification during iteration
+                    try:
+                        # Try progressively shorter periods
+                        for days in [30, 20, 10, 5]:
+                            try:
+                                data = self._get_historical_data(symbol, days=days)
+                                if not data.empty and len(data) >= 3:  # At least 3 days of data
+                                    preloaded_count += 1
+                                    retry_count += 1
+                                    failed_symbols.remove(symbol)
+                                    self.logger.debug(f"✅ {symbol}: Retry success with {len(data)} bars ({days} days)")
+                                    break
+                            except:
+                                continue
+                    except Exception as e:
+                        self.logger.debug(f"❌ {symbol}: Retry failed - {str(e)}")
+            
+            # Final summary
+            success_rate = (preloaded_count / total_symbols) * 100
+            self.logger.info(f"📈 PRELOADING SUMMARY:")
+            self.logger.info(f"   ✅ Successful: {preloaded_count}/{total_symbols} ({success_rate:.1f}%)")
+            self.logger.info(f"   🔄 Retried successfully: {retry_count}")
+            self.logger.info(f"   ❌ Still failed: {len(failed_symbols)}")
+            
+            if failed_symbols:
+                self.logger.warning(f"❌ Permanently failed symbols: {failed_symbols}")
+                
+                # If too many failed, suggest checking API configuration
+                if len(failed_symbols) > total_symbols * 0.3:  # More than 30% failed
+                    self.logger.warning("⚠️  High failure rate - check your API configuration!")
+            
             self.logger.info(f"Historical data preloading complete: {preloaded_count} symbols cached")
+            return preloaded_count
             
         except Exception as e:
-            self.logger.error(f"Failed to preload historical data: {e}")
+            self.logger.error(f"💥 Enhanced preloading failed: {e}")
+            return 0
+
 
     async def _start_dashboard_server(self):
         """Start dashboard server (enhanced placeholder)"""
@@ -1356,11 +1408,11 @@ Status: {'Fallback Mode' if self.fallback_mode else 'Normal Operation'}
                 except Exception as e:
                     self.logger.debug(f"ML filter error for {symbol}: {e}")
                     
-            return filtered[:3]  # Return top 3 in fallback mode, 5 in normal mode
+            return filtered[:30]  # Return top 3 in fallback mode, 5 in normal mode
             
         except Exception as e:
             self.logger.debug(f"ML filtering failed: {e}")
-            return symbols[:3]  # Fallback to first 3 symbols
+            return symbols[:30]  # Fallback to first 3 symbols
 
 
 # Entry point with enhanced error handling

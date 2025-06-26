@@ -1,0 +1,702 @@
+[
+  {
+    "timestamp": "2025-06-26T08:08:41.581149",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.23
+  },
+  {
+    "timestamp": "2025-06-26T08:09:11.665842",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.23
+  },
+  {
+    "timestamp": "2025-06-26T08:09:41.757651",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.23
+  },
+  {
+    "timestamp": "2025-06-26T08:10:11.834179",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.41
+  },
+  {
+    "timestamp": "2025-06-26T08:10:41.919127",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.41
+  },
+  {
+    "timestamp": "2025-06-26T08:11:12.012489",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.92
+  },
+  {
+    "timestamp": "2025-06-26T08:11:42.091730",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.19
+  },
+  {
+    "timestamp": "2025-06-26T08:12:12.175637",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.73
+  },
+  {
+    "timestamp": "2025-06-26T08:12:42.254383",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.55
+  },
+  {
+    "timestamp": "2025-06-26T08:13:12.333583",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.83
+  },
+  {
+    "timestamp": "2025-06-26T08:13:42.408325",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.56
+  },
+  {
+    "timestamp": "2025-06-26T08:14:12.481975",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.62
+  },
+  {
+    "timestamp": "2025-06-26T08:14:42.568109",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.27
+  },
+  {
+    "timestamp": "2025-06-26T08:15:12.650946",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.07
+  },
+  {
+    "timestamp": "2025-06-26T08:15:42.735270",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.52
+  },
+  {
+    "timestamp": "2025-06-26T08:16:12.821146",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.06
+  },
+  {
+    "timestamp": "2025-06-26T08:16:42.899332",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.43
+  },
+  {
+    "timestamp": "2025-06-26T08:17:12.975461",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98151.77
+  },
+  {
+    "timestamp": "2025-06-26T08:17:43.055841",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98151.38
+  },
+  {
+    "timestamp": "2025-06-26T08:18:13.142695",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.01
+  },
+  {
+    "timestamp": "2025-06-26T08:18:43.227822",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.1
+  },
+  {
+    "timestamp": "2025-06-26T08:19:13.318718",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98151.47
+  },
+  {
+    "timestamp": "2025-06-26T08:19:43.412282",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.01
+  },
+  {
+    "timestamp": "2025-06-26T08:20:13.500670",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.01
+  },
+  {
+    "timestamp": "2025-06-26T08:20:43.594553",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.38
+  },
+  {
+    "timestamp": "2025-06-26T08:21:13.678597",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.38
+  },
+  {
+    "timestamp": "2025-06-26T08:21:43.771490",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.36
+  },
+  {
+    "timestamp": "2025-06-26T08:22:13.855270",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.32
+  },
+  {
+    "timestamp": "2025-06-26T08:22:43.937828",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.32
+  },
+  {
+    "timestamp": "2025-06-26T08:23:14.026695",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.56
+  },
+  {
+    "timestamp": "2025-06-26T08:23:44.124323",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.56
+  },
+  {
+    "timestamp": "2025-06-26T08:24:14.203717",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.01
+  },
+  {
+    "timestamp": "2025-06-26T08:24:44.310131",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.01
+  },
+  {
+    "timestamp": "2025-06-26T08:25:14.387793",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.77
+  },
+  {
+    "timestamp": "2025-06-26T08:25:44.462666",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.5
+  },
+  {
+    "timestamp": "2025-06-26T08:26:14.548273",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.34
+  },
+  {
+    "timestamp": "2025-06-26T08:26:44.627541",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98153.18
+  },
+  {
+    "timestamp": "2025-06-26T08:27:14.709422",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98152.62
+  },
+  {
+    "timestamp": "2025-06-26T09:01:27.061160",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98146.31
+  },
+  {
+    "timestamp": "2025-06-26T09:18:15.109636",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.98
+  },
+  {
+    "timestamp": "2025-06-26T09:20:35.118098",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.98
+  },
+  {
+    "timestamp": "2025-06-26T09:21:05.226818",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.6
+  },
+  {
+    "timestamp": "2025-06-26T09:21:35.519573",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98150.12
+  },
+  {
+    "timestamp": "2025-06-26T09:22:05.609674",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98150.05
+  },
+  {
+    "timestamp": "2025-06-26T09:22:35.696969",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.48
+  },
+  {
+    "timestamp": "2025-06-26T09:23:05.770233",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.4
+  },
+  {
+    "timestamp": "2025-06-26T09:23:35.840544",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.16
+  },
+  {
+    "timestamp": "2025-06-26T09:24:05.913902",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.98
+  },
+  {
+    "timestamp": "2025-06-26T09:24:35.995975",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.76
+  },
+  {
+    "timestamp": "2025-06-26T09:25:06.071318",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.45
+  },
+  {
+    "timestamp": "2025-06-26T09:25:36.236999",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.88
+  },
+  {
+    "timestamp": "2025-06-26T09:26:06.327624",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.87
+  },
+  {
+    "timestamp": "2025-06-26T09:26:36.416158",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.07
+  },
+  {
+    "timestamp": "2025-06-26T09:27:06.494384",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.74
+  },
+  {
+    "timestamp": "2025-06-26T09:27:36.580277",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.67
+  },
+  {
+    "timestamp": "2025-06-26T09:28:06.666433",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.36
+  },
+  {
+    "timestamp": "2025-06-26T09:28:36.751767",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.33
+  },
+  {
+    "timestamp": "2025-06-26T09:29:06.837023",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98147.66
+  },
+  {
+    "timestamp": "2025-06-26T09:29:36.930160",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98147.48
+  },
+  {
+    "timestamp": "2025-06-26T09:30:07.025236",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.85
+  },
+  {
+    "timestamp": "2025-06-26T09:30:37.109391",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98147.98
+  },
+  {
+    "timestamp": "2025-06-26T09:31:07.243346",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98148.46
+  },
+  {
+    "timestamp": "2025-06-26T09:31:37.325555",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98146.2
+  },
+  {
+    "timestamp": "2025-06-26T09:32:07.415661",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98149.92
+  },
+  {
+    "timestamp": "2025-06-26T09:32:37.510529",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98143.86
+  },
+  {
+    "timestamp": "2025-06-26T09:33:07.596690",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98139.43
+  },
+  {
+    "timestamp": "2025-06-26T09:33:37.677162",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98142.49
+  },
+  {
+    "timestamp": "2025-06-26T09:34:07.767840",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98137.83
+  },
+  {
+    "timestamp": "2025-06-26T09:34:37.862707",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98135.31
+  },
+  {
+    "timestamp": "2025-06-26T09:35:07.955301",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98136.57
+  },
+  {
+    "timestamp": "2025-06-26T09:35:38.080124",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98134.72
+  },
+  {
+    "timestamp": "2025-06-26T09:36:08.169055",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98138.47
+  },
+  {
+    "timestamp": "2025-06-26T09:36:38.269362",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98136.61
+  },
+  {
+    "timestamp": "2025-06-26T09:37:08.353666",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98135.67
+  },
+  {
+    "timestamp": "2025-06-26T09:37:38.445011",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98133.48
+  },
+  {
+    "timestamp": "2025-06-26T09:38:08.537366",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98134.19
+  },
+  {
+    "timestamp": "2025-06-26T09:38:38.633466",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98138.33
+  },
+  {
+    "timestamp": "2025-06-26T09:39:08.720392",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98138.46
+  },
+  {
+    "timestamp": "2025-06-26T09:39:38.802061",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98140.15
+  },
+  {
+    "timestamp": "2025-06-26T09:40:08.905239",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98143.33
+  },
+  {
+    "timestamp": "2025-06-26T09:40:38.997587",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98143.98
+  },
+  {
+    "timestamp": "2025-06-26T09:41:09.082981",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98145.41
+  },
+  {
+    "timestamp": "2025-06-26T09:41:39.170956",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98146.27
+  },
+  {
+    "timestamp": "2025-06-26T09:42:09.264798",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98144.96
+  },
+  {
+    "timestamp": "2025-06-26T09:42:39.357191",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98147.27
+  },
+  {
+    "timestamp": "2025-06-26T09:43:09.442099",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98146.04
+  },
+  {
+    "timestamp": "2025-06-26T09:43:39.529366",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98146.95
+  },
+  {
+    "timestamp": "2025-06-26T09:44:09.628109",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98145.27
+  },
+  {
+    "timestamp": "2025-06-26T09:44:39.724539",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98144.04
+  },
+  {
+    "timestamp": "2025-06-26T09:45:09.821186",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98143.49
+  },
+  {
+    "timestamp": "2025-06-26T09:45:39.935207",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98141.74
+  },
+  {
+    "timestamp": "2025-06-26T09:46:10.036055",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98137.55
+  },
+  {
+    "timestamp": "2025-06-26T09:46:40.118307",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98136.58
+  },
+  {
+    "timestamp": "2025-06-26T09:47:10.205777",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98137.34
+  },
+  {
+    "timestamp": "2025-06-26T09:47:40.283903",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98135.23
+  },
+  {
+    "timestamp": "2025-06-26T09:48:10.362820",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98134.39
+  },
+  {
+    "timestamp": "2025-06-26T09:48:40.462818",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98134.48
+  },
+  {
+    "timestamp": "2025-06-26T09:49:10.678982",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98130.38
+  },
+  {
+    "timestamp": "2025-06-26T09:49:40.804523",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98129.49
+  },
+  {
+    "timestamp": "2025-06-26T09:50:10.908737",
+    "status": "running",
+    "daily_pnl": 0.0,
+    "positions": 0,
+    "equity": 98131.58
+  }
+]

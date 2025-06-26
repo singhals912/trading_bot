@@ -12,7 +12,7 @@
     }
   },
   "sentiment_AAPL_6h": {
-    "timestamp": "2025-06-23 08:46:40.169994",
+    "timestamp": "2025-06-26 07:55:54.107856",
     "data": {
       "symbol": "AAPL",
       "overall_sentiment": 0.0,
@@ -24,7 +24,7 @@
     }
   },
   "sentiment_MSFT_6h": {
-    "timestamp": "2025-06-23 08:46:56.098766",
+    "timestamp": "2025-06-26 07:56:14.329047",
     "data": {
       "symbol": "MSFT",
       "overall_sentiment": 0.0,
@@ -36,7 +36,7 @@
     }
   },
   "sentiment_AMZN_6h": {
-    "timestamp": "2025-06-23 08:47:04.960971",
+    "timestamp": "2025-06-26 07:56:26.210235",
     "data": {
       "symbol": "AMZN",
       "overall_sentiment": 0.0,
@@ -48,7 +48,7 @@
     }
   },
   "sentiment_GOOGL_6h": {
-    "timestamp": "2025-06-23 08:47:09.593913",
+    "timestamp": "2025-06-26 07:56:35.887040",
     "data": {
       "symbol": "GOOGL",
       "overall_sentiment": 0.0,
@@ -60,7 +60,7 @@
     }
   },
   "sentiment_TSLA_6h": {
-    "timestamp": "2025-06-23 08:47:10.898796",
+    "timestamp": "2025-06-26 07:56:39.508467",
     "data": {
       "symbol": "TSLA",
       "overall_sentiment": 0.0,
@@ -75,6 +75,18 @@
     "timestamp": "2025-06-23 09:32:33.901290",
     "data": {
       "symbol": "JPM",
+      "overall_sentiment": 0.0,
+      "sentiment_label": "neutral",
+      "article_count": 0,
+      "confidence": 0.0,
+      "recent_negative_news": false,
+      "major_news_detected": false
+    }
+  },
+  "sentiment_WMT_6h": {
+    "timestamp": "2025-06-25 18:21:20.010223",
+    "data": {
+      "symbol": "WMT",
       "overall_sentiment": 0.0,
       "sentiment_label": "neutral",
       "article_count": 0,

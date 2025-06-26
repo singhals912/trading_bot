@@ -223,7 +223,7 @@ def _select_symbols_enhanced(self) -> List[str]:
                         filtered_symbols.append(symbol)
                         
                     # Limit number of symbols to manage API calls
-                    if len(filtered_symbols) >= 30:
+                    if len(filtered_symbols) >= 35:
                         break
                         
             except Exception as e:
@@ -240,7 +240,12 @@ def _select_symbols_enhanced(self) -> List[str]:
     except Exception as e:
         self.logger.error(f"Enhanced symbol selection failed: {e}")
         # Ultimate fallback
-        return ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
+        return [
+                'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA',
+                'VOO', 'SPY', 'QQQ', 'HOOD', 'RDDT', 'PLTR', 'WMT',
+                'COST', 'NFLX', 'ADBE', 'CRWD', 'AMD', 'AVGO', 'UNH', 'BA', 'HUM','SMCI','UAL',
+                'UBER','LYFT', 'SOFI', 'ORCL', 'TSM', 'SPOT', 'HIMS'
+            ]
 
 # ADD THIS METHOD to handle API failures gracefully:
 

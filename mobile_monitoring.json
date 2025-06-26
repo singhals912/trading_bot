@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-06-26T09:50:40.992279",
+  "status": "running",
+  "uptime_start": "2025-06-26T07:55:39.054761",
+  "bot_version": "v5.0",
+  "system_health": {
+    "cpu_usage": 10.1,
+    "memory_usage": 73.1,
+    "disk_space": 19.0,
+    "network_status": "connected"
+  },
+  "trading_status": {
+    "market_hours": "open",
+    "active_positions": 0,
+    "daily_pnl": 0.0,
+    "total_trades_today": 0,
+    "win_rate_today": 0,
+    "account_equity": 98132.12,
+    "buying_power": 386102.56,
+    "last_trade_time": null
+  },
+  "alerts": {
+    "active_alerts": [],
+    "alert_count_today": 0,
+    "last_alert_time": null
+  },
+  "performance": {
+    "total_return": 0,
+    "sharpe_ratio": 0,
+    "max_drawdown": 0,
+    "profit_factor": 0
+  },
+  "uptime_hours": 1.9
+}

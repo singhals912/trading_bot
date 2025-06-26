@@ -433,7 +433,7 @@ class AlgoTradingBot:
 
     def trend_following_strategy(self, symbol: str) -> Optional[str]:
         """
-        Enhanced Dual Moving Average Crossover with multiple filters
+        FIXED: More conservative trend following with bull market bias
         """
         try:
             data = self._get_historical_data(symbol, days=100)
@@ -455,43 +455,90 @@ class AlgoTradingBot:
             last_row = data.iloc[-1]
             prev_row = data.iloc[-2]
             
-            # Multiple confirmation filters
-            conditions = {
+            # FIXED: Get market trend context
+            market_trend = self._get_market_trend()
+            
+            # FIXED: Much stricter buy conditions
+            buy_conditions = {
                 'trend_up': last_row['close'] > last_row['sma_trend'],
                 'ema_cross_up': (last_row['ema_fast'] > last_row['ema_slow'] and 
-                               prev_row['ema_fast'] <= prev_row['ema_slow']),
-                'macd_positive': last_row['macd'] > last_row['signal_line'],
-                'volume_confirm': last_row['volume'] > last_row['volume_ma'] * 1.2,
-                'volatility_ok': last_row['atr'] < data['atr'].quantile(0.8)
+                            prev_row['ema_fast'] <= prev_row['ema_slow']),
+                'macd_positive': last_row['macd'] > last_row['signal_line'] and last_row['macd'] > 0,
+                'volume_confirm': last_row['volume'] > last_row['volume_ma'] * 1.5,  # Strong volume
+                'volatility_ok': last_row['atr'] < data['atr'].quantile(0.7),  # Not too volatile
+                'market_supportive': market_trend in ['bullish', 'neutral'],  # Market not bearish
+                'momentum_strong': (last_row['close'] / data['close'].iloc[-10] - 1) > 0.02  # 2% up in 10 days
             }
             
-            # Buy signal: at least 4 out of 5 conditions
-            if sum(conditions.values()) >= 4:
-                self.logger.info(f"Strong BUY signal for {symbol}: {conditions}")
+            # Need 6 out of 7 conditions for buy signal
+            if sum(buy_conditions.values()) >= 6:
+                self.logger.info(f"Strong BUY signal for {symbol}: {buy_conditions}")
                 return 'buy'
                 
-            # Sell signal (reverse conditions)
-            sell_conditions = {
-                'trend_down': last_row['close'] < last_row['sma_trend'],
-                'ema_cross_down': (last_row['ema_fast'] < last_row['ema_slow'] and 
-                                 prev_row['ema_fast'] >= prev_row['ema_slow']),
-                'macd_negative': last_row['macd'] < last_row['signal_line'],
-                'volume_confirm': last_row['volume'] > last_row['volume_ma'] * 1.2
-            }
-            
-            if sum(sell_conditions.values()) >= 3:
-                self.logger.info(f"SELL signal for {symbol}: {sell_conditions}")
-                return 'sell'
+            # FIXED: Only allow shorts in clear bear market with ALL conditions
+            if market_trend == 'bearish':
+                sell_conditions = {
+                    'trend_down': last_row['close'] < last_row['sma_trend'],
+                    'ema_cross_down': (last_row['ema_fast'] < last_row['ema_slow'] and 
+                                    prev_row['ema_fast'] >= prev_row['ema_slow']),
+                    'macd_negative': last_row['macd'] < last_row['signal_line'] and last_row['macd'] < 0,
+                    'volume_confirm': last_row['volume'] > last_row['volume_ma'] * 1.2,
+                    'bear_market': market_trend == 'bearish',
+                    'strong_downtrend': (last_row['close'] / data['close'].iloc[-10] - 1) < -0.05  # Down 5% in 10 days
+                }
                 
+                # Need ALL conditions for short
+                if sum(sell_conditions.values()) == len(sell_conditions):
+                    self.logger.info(f"SELL signal for {symbol} (bear market): {sell_conditions}")
+                    return 'sell'
+                    
             return None
             
         except Exception as e:
             self.logger.error(f"Trend following strategy failed for {symbol}: {str(e)}")
             return None
 
+    def _get_market_trend(self) -> str:
+        """
+        NEW METHOD: Determine overall market trend using SPY
+        """
+        try:
+            spy_data = self._get_historical_data('SPY', days=50)
+            if spy_data.empty:
+                return 'neutral'
+                
+            spy_data['sma_20'] = spy_data['close'].rolling(20).mean()
+            spy_data['sma_50'] = spy_data['close'].rolling(50).mean()
+            
+            last_price = spy_data['close'].iloc[-1]
+            sma_20 = spy_data['sma_20'].iloc[-1]
+            sma_50 = spy_data['sma_50'].iloc[-1]
+            
+            # Determine trend
+            if last_price > sma_20 > sma_50:
+                trend = 'bullish'
+            elif last_price < sma_20 < sma_50:
+                trend = 'bearish'
+            else:
+                trend = 'neutral'
+                
+            # Check momentum
+            momentum = (last_price / spy_data['close'].iloc[-20] - 1) * 100
+            
+            if trend == 'bullish' and momentum > 2:
+                return 'bullish'
+            elif trend == 'bearish' and momentum < -5:
+                return 'bearish'
+            else:
+                return 'neutral'
+                
+        except Exception as e:
+            self.logger.debug(f"Market trend detection failed: {e}")
+            return 'neutral'
+
     def mean_reversion_strategy(self, symbol: str) -> Optional[str]:
         """
-        Enhanced Mean Reversion with multiple oscillators
+        FIXED: Much more conservative mean reversion strategy
         """
         try:
             data = self._get_historical_data(symbol, days=60)
@@ -503,33 +550,48 @@ class AlgoTradingBot:
             data['bb_upper'], data['bb_lower'] = self._calculate_bollinger_bands(data['close'])
             data['bb_mid'] = (data['bb_upper'] + data['bb_lower']) / 2
             data['stoch_k'], data['stoch_d'] = self._calculate_stochastic(data)
+            data['sma_20'] = data['close'].rolling(20).mean()
+            data['sma_50'] = data['close'].rolling(50).mean()
             
             last_row = data.iloc[-1]
             
-            # Oversold conditions
-            oversold_conditions = {
-                'rsi_oversold': last_row['rsi'] < 30,
-                'bb_oversold': last_row['close'] < last_row['bb_lower'],
-                'stoch_oversold': last_row['stoch_k'] < 20,
-                'price_below_mean': last_row['close'] < data['close'].rolling(20).mean().iloc[-1]
-            }
+            # FIXED: Add market trend filter - NEVER short in uptrending markets
+            market_trend = self._get_market_trend()  # Check SPY trend
+            price_trend = last_row['close'] > last_row['sma_50']  # Stock above 50-day MA
             
-            # Overbought conditions
-            overbought_conditions = {
-                'rsi_overbought': last_row['rsi'] > 70,
-                'bb_overbought': last_row['close'] > last_row['bb_upper'],
-                'stoch_overbought': last_row['stoch_k'] > 80,
-                'price_above_mean': last_row['close'] > data['close'].rolling(20).mean().iloc[-1]
-            }
+            # FIXED: Much stricter oversold conditions (only buy dips in uptrends)
+            if market_trend == 'bullish' or price_trend:
+                oversold_conditions = {
+                    'rsi_very_oversold': last_row['rsi'] < 25,  # More extreme threshold
+                    'bb_oversold': last_row['close'] < last_row['bb_lower'],
+                    'stoch_oversold': last_row['stoch_k'] < 15,  # More extreme
+                    'price_below_sma20': last_row['close'] < last_row['sma_20'],
+                    'above_sma50': last_row['close'] > last_row['sma_50'],  # Still in uptrend
+                    'recent_pullback': (last_row['close'] / data['close'].iloc[-5] - 1) < -0.02  # Recent 2% pullback
+                }
+                
+                # Need ALL 6 conditions for buy in mean reversion
+                if sum(oversold_conditions.values()) >= 5:
+                    self.logger.info(f"Mean reversion BUY signal for {symbol}: {oversold_conditions}")
+                    return 'buy'
             
-            if sum(oversold_conditions.values()) >= 3:
-                self.logger.info(f"Mean reversion BUY signal for {symbol}")
-                return 'buy'
+            # FIXED: COMPLETELY DISABLE shorts unless in clear bear market
+            elif market_trend == 'bearish':
+                # Only short in clear bear markets with ALL conditions met
+                overbought_conditions = {
+                    'rsi_extreme_overbought': last_row['rsi'] > 80,  # Extreme threshold
+                    'bb_overbought': last_row['close'] > last_row['bb_upper'],
+                    'stoch_overbought': last_row['stoch_k'] > 85,   # Extreme threshold
+                    'price_above_sma20': last_row['close'] > last_row['sma_20'] * 1.05,  # 5% above
+                    'below_sma50': last_row['close'] < last_row['sma_50'],  # Confirmed downtrend
+                    'bear_market': market_trend == 'bearish'
+                }
                 
-            if sum(overbought_conditions.values()) >= 3:
-                self.logger.info(f"Mean reversion SELL signal for {symbol}")
-                return 'sell'
-                
+                # Need ALL conditions for short (very restrictive)
+                if sum(overbought_conditions.values()) == len(overbought_conditions):
+                    self.logger.info(f"Mean reversion SELL signal for {symbol} (bear market only): {overbought_conditions}")
+                    return 'sell'
+            
             return None
             
         except Exception as e:
@@ -803,13 +865,16 @@ class AlgoTradingBot:
 
     def _calculate_stochastic(self, data: pd.DataFrame, k_period: int = 14, d_period: int = 3) -> Tuple[pd.Series, pd.Series]:
         """Calculate Stochastic Oscillator"""
-        low_min = data['low'].rolling(k_period).min()
-        high_max = data['high'].rolling(k_period).max()
-        
-        k_percent = 100 * ((data['close'] - low_min) / (high_max - low_min))
-        d_percent = k_percent.rolling(d_period).mean()
-        
-        return k_percent, d_percent
+        try:
+            low_min = data['low'].rolling(k_period).min()
+            high_max = data['high'].rolling(k_period).max()
+            
+            k_percent = 100 * ((data['close'] - low_min) / (high_max - low_min))
+            d_percent = k_percent.rolling(d_period).mean()
+            
+            return k_percent, d_percent
+        except:
+            return pd.Series([50] * len(data), index=data.index), pd.Series([50] * len(data), index=data.index)
 
     def _calculate_atr(self, data: pd.DataFrame, period: int = 14) -> pd.Series:
         """Calculate Average True Range"""
@@ -842,35 +907,69 @@ class AlgoTradingBot:
         return upper_band, lower_band
     
     def _select_symbols(self) -> List[str]:
-        """Enhanced symbol selection with volume and liquidity filters"""
-        # Base universe of liquid stocks
-        base_symbols = [
-        'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NVDA', 
-        'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA', 'DIS',
-        'ADBE', 'NFLX', 'CRM', 'PYPL', 'INTC', 'AMD', 'QCOM',
-        'BAC', 'XOM', 'WMT', 'LLY', 'ABBV', 'COST', 'PFE', 'KO', 
-        'AVGO', 'TMO', 'ACN', 'MRK', 'CSCO', 'PEP', 'ABT', 'CVX', 
-        'VZ', 'NKE', 'WFC', 'T', 'ORCL', 'CMCSA', 'IBM', 'MDT',
-        'TXN', 'AMGN', 'HON', 'BMY', 'SBUX', 'CAT',
-        'LMT', 'MMM', 'BA', 'GS', 'RTX', 'C', 'USB', 'SCHW',
-        'INTU', 'NOW', 'ZM', 'SNAP', 'DOCU',
-        'UBER', 'LYFT', 'PLTR', 'CRWD', 'DDOG', 'SNOW'
+        """
+        FIXED: Return ALL your symbols for preloading, apply filtering later
+        """
+        # Your complete symbol list - ALL 33 symbols
+        all_symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA',
+            'VOO', 'SPY', 'QQQ', 'HOOD', 'RDDT', 'PLTR', 'WMT',
+            'COST', 'NFLX', 'ADBE', 'CRWD', 'AMD', 'AVGO', 'UNH', 
+            'BA', 'HUM', 'SMCI', 'UAL', 'UBER', 'LYFT', 'SOFI', 
+            'ORCL', 'TSM', 'SPOT', 'HIMS'
         ]
         
-        # Filter based on volume and avoid penny stocks
-        filtered_symbols = []
-        for symbol in base_symbols:
-            try:
-                data = self._get_historical_data(symbol, days=5)
-                if not data.empty and data['volume'].mean() > 1000000:  # Min 1M avg volume
-                    filtered_symbols.append(symbol)
-            except Exception as e:
-                self.logger.debug(f"Skipping {symbol} due to data issue: {str(e)}")
-                # Continue to next symbol instead of logging error
-                
-        self.logger.info(f"Selected {len(filtered_symbols)} symbols for analysis")
-        return filtered_symbols
+        self.logger.debug(f"🎯 Selected {len(all_symbols)} symbols for analysis")
+        return all_symbols
     
+    def _select_trading_symbols(self) -> List[str]:
+        """
+        Separate method for trading-time symbol selection with momentum filtering
+        This is called during actual trading, not preloading
+        """
+        try:
+            # Get all cached symbols
+            all_symbols = self._select_symbols()
+            
+            # Apply momentum and volume filtering for trading
+            trending_symbols = []
+            market_trend = self._get_market_trend()
+            
+            for symbol in all_symbols:
+                try:
+                    data = self._get_historical_data(symbol, days=20)
+                    if data.empty:
+                        continue
+                        
+                    # Calculate momentum
+                    momentum = (data['close'].iloc[-1] / data['close'].iloc[-10] - 1) * 100
+                    volume_avg = data['volume'].mean()
+                    
+                    # Apply trading filters
+                    if market_trend == 'bullish':
+                        if momentum > 0 and volume_avg > 1000000:
+                            trending_symbols.append(symbol)
+                    elif market_trend == 'neutral':
+                        if abs(momentum) > 1 and volume_avg > 1000000:
+                            trending_symbols.append(symbol)
+                    else:  # bearish
+                        if momentum > -2 and volume_avg > 2000000:
+                            trending_symbols.append(symbol)
+                            
+                except Exception as e:
+                    self.logger.debug(f"Trading symbol filtering error for {symbol}: {e}")
+                    continue
+            
+            # Return filtered symbols for trading (max 10-15 for efficiency)
+            selected = trending_symbols[:15] if trending_symbols else all_symbols[:10]
+            self.logger.debug(f"📊 Selected {len(selected)} symbols for trading: {selected}")
+            return selected
+            
+        except Exception as e:
+            self.logger.error(f"Trading symbol selection failed: {e}")
+            return ['AAPL', 'MSFT', 'GOOGL']  # Safe fallback
+
+            
     def generate_performance_report(self):
         """Enhanced performance reporting with detailed metrics"""
         try:
@@ -1256,45 +1355,33 @@ class AlgoTradingBot:
         return np.percentile(returns, (1 - confidence) * 100)
 
 if __name__ == "__main__":
-    # Enhanced configuration with additional parameters
+    print("🚨 NOTICE: Please use enhanced_startup_script.py to run the bot")
+    print("   python enhanced_startup_script.py")
+    print("   This ensures consistent configuration management")
+    print("\n   If you want to run this file directly, set environment variables:")
+    print("   - APCA_API_KEY_ID")
+    print("   - APCA_API_SECRET_KEY")
+    print("   - STRATEGY (trend/mean_reversion/combined)")
+    print("   - RISK_PCT (0.01-0.05)")
+    print("   - MAX_POSITIONS (1-5)")
+    
+    # Simple fallback config for direct execution
     config = {
-    # Existing config...
-    'API_KEY': os.getenv('APCA_API_KEY_ID', 'your_api_key'),
-    'SECRET_KEY': os.getenv('APCA_API_SECRET_KEY', 'your_secret_key'),
-    'BASE_URL': os.getenv('APCA_API_BASE_URL', 'https://paper-api.alpaca.markets'),
-    'PAPER_TRADING': True,  # Set to False for live trading
-    
-    # Risk Management
-    'RISK_PCT': 0.02,  # 2% risk per trade (reduced from 5%)
-    'MAX_POSITIONS': 3,  # Reduced from 5 for better risk management
-    'MAX_DAILY_LOSS': 0.02,  # 2% maximum daily loss
-    
-    # Strategy Configuration
-    'STRATEGY': 'combined',  # 'trend', 'mean_reversion', or 'combined'
-    
-    # Timing Configuration
-    'LOOP_SLEEP': 60,  # Seconds between analysis loops
-    
-    # Logging Configuration
-    'LOG_LEVEL': 'INFO',
-
-    # New ML/Advanced features
-    'USE_ML_SIGNALS': True,
-    'ML_CONFIDENCE_THRESHOLD': 0.7,
-    'PORTFOLIO_OPTIMIZATION': True,
-    'ADAPTIVE_RISK_MANAGEMENT': True,
-    'MARKET_MICROSTRUCTURE_ANALYSIS': True,
-    
-    # Enhanced risk parameters
-    'USE_KELLY_CRITERION': True,
-    'MAX_PORTFOLIO_HEAT': 0.6,  # Max average correlation
-    'MIN_LIQUIDITY_SCORE': 0.5,
-    
-    # Execution parameters
-    'SMART_ORDER_ROUTING': True,
-    'MAX_SPREAD_PCT': 0.01,  # 1% max spread
-    'USE_ADAPTIVE_STOPS': True,
+        'API_KEY': os.getenv('APCA_API_KEY_ID', ''),
+        'SECRET_KEY': os.getenv('APCA_API_SECRET_KEY', ''),
+        'PAPER_TRADING': True,
+        'RISK_PCT': float(os.getenv('RISK_PCT', '0.01')),
+        'MAX_POSITIONS': int(os.getenv('MAX_POSITIONS', '1')),
+        'MAX_DAILY_LOSS': float(os.getenv('MAX_DAILY_LOSS', '0.02')),
+        'STRATEGY': os.getenv('STRATEGY', 'trend'),
+        'LOOP_SLEEP': 60,
+        'LOG_LEVEL': 'INFO',
     }
+    
+    if not config['API_KEY'] or not config['SECRET_KEY']:
+        print("❌ Missing API keys. Please set APCA_API_KEY_ID and APCA_API_SECRET_KEY")
+        print("   Or run: python enhanced_startup_script.py")
+        sys.exit(1)
     
     try:
         bot = AlgoTradingBot(config)
@@ -1302,5 +1389,3 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Failed to start trading bot: {str(e)}")
         raise
-
-    

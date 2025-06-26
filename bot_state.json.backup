@@ -19,5 +19,17 @@
     "MAX_SYMBOLS": 15,
     "STRATEGY": "combined",
     "CLOSE_ON_SHUTDOWN": false
-  }
+  },
+  "last_run": "2025-06-26T09:49:02.401673",
+  "total_trades": 0,
+  "total_pnl": 0,
+  "uptime_hours": 0,
+  "last_positions": {},
+  "performance_stats": {
+    "best_day": 0.0,
+    "worst_day": 0.0,
+    "consecutive_winning_days": 0,
+    "consecutive_losing_days": 0
+  },
+  "current_positions": {}
 }
