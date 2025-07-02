@@ -1,0 +1,7 @@
+# AWS Deployment Configuration
+INSTANCE_ID=i-065695c0be57280c1
+PUBLIC_IP=54.91.93.69
+REGION=us-east-1
+KEY_FILE="/Users/ss/Downloads/trading-bot-key.pem"
+SSH_COMMAND="ssh -i ~/Downloads/trading-bot-key.pem ubuntu@54.91.93.69"
+DASHBOARD_URL=http://54.91.93.69

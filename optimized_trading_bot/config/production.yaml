@@ -1,0 +1,266 @@
+# Optimized Trading Bot - Production Configuration
+# This file contains the production settings for the trading bot
+
+# Environment Configuration
+environment: "production"
+bot_name: "OptimizedTradingBot"
+version: "2.0.0"
+
+# API Credentials (use environment variables for security)
+api_credentials:
+  key_id: "${APCA_API_KEY_ID}"
+  secret_key: "${APCA_API_SECRET_KEY}"
+  base_url: "https://api.alpaca.markets"
+  paper_trading: true   # ENABLED: Paper trading for testing and optimization
+
+# Trading Engine Configuration
+trading:
+  # Capital Management
+  total_capital: 50000.00
+  trading_capital: 25000.00  # Conservative 50% allocation
+  cash_reserve_pct: 0.10     # 10% cash reserve
+  
+  # Position Management
+  max_positions: 6
+  max_position_size_pct: 0.15  # Max 15% per position
+  min_position_size: 500.00
+  
+  # Order Management
+  default_order_type: "limit"
+  order_timeout_seconds: 300
+  max_slippage_pct: 0.005  # 0.5% max slippage
+  
+  # Trading Sessions
+  enable_extended_hours: true
+  pre_market_start: "04:00"
+  regular_market_start: "09:30"
+  regular_market_end: "16:00"
+  after_hours_end: "20:00"
+  
+  # Strategy Settings
+  strategy_type: "combined"
+  strategy_weights:
+    trend_following: 0.4
+    mean_reversion: 0.35
+    momentum: 0.25
+
+# Risk Management Configuration
+risk:
+  # Daily Limits (relaxed for paper trading)
+  max_daily_loss_pct: 0.025    # 2.5% max daily loss
+  max_daily_trades: 25
+  max_consecutive_losses: 3
+  
+  # Position Risk
+  default_stop_loss_pct: 0.02   # 2% stop loss
+  default_take_profit_pct: 0.05 # 5% take profit
+  trailing_stop_enabled: true
+  trailing_stop_pct: 0.015      # 1.5% trailing stop
+  
+  # Portfolio Risk
+  max_correlation: 0.65         # Max 65% correlation
+  max_sector_concentration: 0.4 # Max 40% in one sector
+  max_portfolio_volatility: 0.18 # Max 18% annualized volatility
+  
+  # Volatility Management
+  volatility_lookback_days: 21
+  volatility_adjustment_factor: 1.2
+  atr_multiplier: 2.5
+  
+  # Circuit Breakers
+  enable_circuit_breakers: true
+  max_drawdown_halt: 0.08       # Halt at 8% drawdown
+  volatility_halt_threshold: 0.04 # Halt at 4% daily volatility
+
+# Data Provider Configuration
+data:
+  # Primary Data Source
+  primary_provider: "alpaca"
+  backup_providers:
+    - "yfinance"
+    - "alpha_vantage"
+  
+  # Data Caching
+  enable_caching: true
+  cache_provider: "redis"
+  cache_ttl_quotes: 3           # 3 seconds for quotes
+  cache_ttl_bars: 180          # 3 minutes for bars
+  cache_ttl_fundamentals: 43200 # 12 hours for fundamentals
+  
+  # Data Quality
+  enable_data_validation: true
+  max_price_change_pct: 0.15    # 15% max price change filter
+  min_volume_threshold: 500000
+  
+  # Historical Data
+  default_timeframe: "1D"
+  max_historical_days: 252     # 1 year
+  warm_up_period_days: 63      # ~3 months
+  
+  # Real-time Data
+  enable_streaming: true
+  stream_buffer_size: 1000
+  reconnect_attempts: 5
+  reconnect_delay_seconds: 10
+  
+  # Rate Limiting
+  api_calls_per_minute: 150
+  api_calls_per_hour: 8000
+  enable_rate_limiting: true
+
+# Notification Configuration
+notifications:
+  enable_notifications: true
+  notification_levels:
+    - "critical"
+    - "error"
+    - "warning"
+  
+  # Email Configuration
+  email_enabled: true
+  email_smtp_host: "${EMAIL_SMTP_HOST}"
+  email_smtp_port: 587
+  email_username: "${EMAIL_USERNAME}"
+  email_password: "${EMAIL_PASSWORD}"
+  email_recipients:
+    - "${NOTIFICATION_EMAIL}"
+  
+  # SMS Configuration (Twilio)
+  sms_enabled: true
+  twilio_account_sid: "${TWILIO_ACCOUNT_SID}"
+  twilio_auth_token: "${TWILIO_AUTH_TOKEN}"
+  twilio_phone_number: "${TWILIO_PHONE_NUMBER}"
+  sms_recipients:
+    - "${NOTIFICATION_PHONE}"
+  
+  # Alert Throttling
+  enable_throttling: true
+  min_alert_interval_seconds: 600  # 10 minutes
+  max_alerts_per_hour: 10
+
+# Monitoring Configuration
+monitoring:
+  enable_monitoring: true
+  metrics_collection_interval: 30  # 30 seconds
+  health_check_interval: 15        # 15 seconds
+  
+  # Dashboard
+  dashboard_enabled: true
+  dashboard_host: "0.0.0.0"
+  dashboard_port: 8080
+  dashboard_auto_refresh: 15       # 15 seconds
+  
+  # Remote Access
+  enable_remote_access: true
+  ngrok_enabled: true
+  ngrok_auth_token: "${NGROK_AUTH_TOKEN}"
+  
+  # Metrics Export
+  prometheus_enabled: true
+  prometheus_port: 8000
+  prometheus_metrics_prefix: "trading_bot"
+  
+  # Logging
+  log_level: "INFO"
+  log_to_file: true
+  log_file_path: "logs/trading_bot.log"
+  log_max_file_size: "50MB"
+  log_backup_count: 10
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Performance Monitoring
+  enable_profiling: false
+  profile_output_dir: "logs/profiles"
+  track_memory_usage: true
+  track_cpu_usage: true
+
+# Machine Learning Configuration (Optional)
+ml:
+  enable_ml: false              # Disable ML for initial deployment
+  model_type: "ensemble"
+  feature_engineering_enabled: true
+  
+  # Model Training
+  training_data_days: 252      # 1 year
+  retrain_interval_days: 30
+  min_training_samples: 1000
+  validation_split: 0.2
+  
+  # Feature Engineering
+  technical_indicators:
+    - "rsi"
+    - "macd"
+    - "bollinger"
+    - "atr"
+    - "sma"
+    - "ema"
+  
+  # Model Performance
+  min_accuracy_threshold: 0.58
+  min_sharpe_ratio: 1.2
+  max_drawdown_threshold: 0.12
+  
+  # Prediction
+  confidence_threshold: 0.65
+  enable_ensemble_voting: true
+  prediction_horizon_hours: 24
+
+# Custom Settings
+custom_settings:
+  # Trading Parameters (optimized for paper trading)
+  min_signal_confidence: 0.50      # Lowered from 0.65
+  enable_single_strategy_trades: true  # Allow single strategy signals
+  relaxed_volume_requirements: true   # Reduce volume confirmation needs
+  
+  # Symbol Universe
+  trading_symbols:
+    # Large Cap Tech
+    - "AAPL"
+    - "MSFT" 
+    - "GOOGL"
+    - "AMZN"
+    - "META"
+    - "NVDA"
+    - "TSLA"
+    # Financial
+    - "JPM"
+    - "BAC"
+    - "WFC"
+    # Healthcare
+    - "JNJ"
+    - "UNH"
+    - "PFE"
+    # Consumer
+    - "WMT"
+    - "HD"
+    - "COST"
+    # ETFs for market exposure
+    - "SPY"
+    - "QQQ"
+    - "IWM"
+  
+  # Sector Allocation Limits
+  sector_limits:
+    technology: 0.5      # Max 50% in tech
+    financial: 0.3       # Max 30% in financial
+    healthcare: 0.25     # Max 25% in healthcare
+    consumer: 0.3        # Max 30% in consumer
+    
+  # Strategy-specific settings (relaxed for paper trading)
+  trend_strategy:
+    ema_fast: 12
+    ema_slow: 26
+    signal_period: 9
+    rsi_oversold: 35        # More relaxed from 25
+    rsi_overbought: 65      # More relaxed from 75
+    
+  mean_reversion_strategy:
+    bollinger_period: 20
+    bollinger_std: 2.0
+    rsi_period: 14
+    lookback_period: 10
+    
+  momentum_strategy:
+    momentum_period: 20
+    acceleration_threshold: 0.02
+    volume_factor: 1.5

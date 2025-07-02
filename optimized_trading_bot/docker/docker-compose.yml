@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: development
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VERSION: ${VERSION:-2.0.0}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+    container_name: optimized-trading-bot
+    env_file:
+      - ../.env
+    environment:
+      - PYTHONPATH=/app/src:/app
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+    ports:
+      - "8080:8080"  # Dashboard
+      - "8000:8000"  # API (if needed)
+    volumes:
+      - ../logs:/app/logs
+      - ../data:/app/data
+      - ../config:/app/config
+    networks:
+      - trading-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Redis for caching (if using Redis features)
+  redis:
+    image: redis:7-alpine
+    container_name: trading-bot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - trading-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Optional: PostgreSQL for data storage (if using database features)
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-bot-postgres
+    environment:
+      - POSTGRES_DB=trading_bot
+      - POSTGRES_USER=trading
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-trading_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  trading-network:
+    driver: bridge

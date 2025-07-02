@@ -1,0 +1,156 @@
+# Optimized Trading Bot - Production Dockerfile
+# Multi-stage build for optimized image size and security
+# Fixed for Python 3.11 and ta-lib compilation issues
+
+# Build stage
+FROM python:3.11-slim AS builder
+
+# Set build arguments
+ARG BUILD_DATE
+ARG VERSION
+ARG VCS_REF
+
+# Add metadata
+LABEL maintainer="Trading Bot Team" \
+      version="${VERSION}" \
+      description="Optimized Trading Bot - Production Ready" \
+      build-date="${BUILD_DATE}" \
+      vcs-ref="${VCS_REF}"
+
+# Install system dependencies for building (including ta-lib dependencies)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
+    curl \
+    gcc \
+    g++ \
+    make \
+    pkg-config \
+    wget \
+    tar \
+    gzip \
+    libc6-dev \
+    libffi-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ta-lib from source with proper build system detection
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    autoreconf -fiv && \
+    ./configure --build=x86_64-linux-gnu --prefix=/usr/local && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
+
+# Update library path for ta-lib
+ENV LD_LIBRARY_PATH="/usr/local/lib"
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and setuptools first
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir numpy cython && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Production stage
+FROM python:3.11-slim AS production
+
+# Install runtime dependencies including ta-lib runtime libs
+RUN apt-get update && apt-get install -y \
+    curl \
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy ta-lib installation from builder
+COPY --from=builder /usr/local/lib/libta_lib.* /usr/local/lib/
+COPY --from=builder /usr/local/include/ta-lib/ /usr/local/include/ta-lib/
+
+# Update library cache
+RUN ldconfig
+
+# Set ta-lib environment variables
+ENV LD_LIBRARY_PATH="/usr/local/lib"
+ENV TA_LIBRARY_PATH="/usr/local/lib"
+ENV TA_INCLUDE_PATH="/usr/local/include"
+
+# Create non-root user for security
+RUN groupadd -r trading && useradd -r -g trading -d /app -s /bin/bash trading
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=trading:trading src/ /app/src/
+COPY --chown=trading:trading config/ /app/config/
+COPY --chown=trading:trading scripts/ /app/scripts/
+COPY --chown=trading:trading .env.example /app/.env
+
+# Create directories with proper permissions
+RUN mkdir -p /app/logs /app/data /app/backups && \
+    chown -R trading:trading /app
+
+# Set environment variables
+ENV PYTHONPATH="/app/src:/app" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Health check for the dashboard
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/api/status || exit 1
+
+# Switch to non-root user
+USER trading
+
+# Expose ports (8080 for dashboard, 8000 for API if needed)
+EXPOSE 8080 8000
+
+# Default command
+CMD ["python", "src/main.py", "--config", "config/production.yaml"]
+
+# Development stage (for local development)
+FROM production AS development
+
+USER root
+
+# Install development dependencies
+RUN pip install \
+    pytest==7.4.4 \
+    pytest-asyncio==0.23.2 \
+    pytest-cov==4.1.0 \
+    pytest-mock==3.12.0 \
+    black==23.12.1 \
+    flake8==7.0.0 \
+    mypy==1.8.0 \
+    ipython \
+    jupyter
+
+# Install debugging tools
+RUN apt-get update && apt-get install -y \
+    vim \
+    htop \
+    strace \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+USER trading
+
+# Override command for development
+CMD ["python", "src/main.py", "--config", "config/development.yaml"]
